@@ -68,6 +68,8 @@ static std::optional<AuthenticatorTransport> convertStringToAuthenticatorTranspo
         return AuthenticatorTransport::Cable;
     if (transport == authenticatorTransportHybrid)
         return AuthenticatorTransport::Hybrid;
+    if (transport == authenticatorTransportSmartCard)
+        return AuthenticatorTransport::SmartCard;
     return std::nullopt;
 }
 
@@ -351,6 +353,7 @@ std::optional<AuthenticatorGetInfoResponse> readCTAPGetInfoResponse(const Vector
         for (const auto& transportString : it->second.getArray()) {
             if (!transportString.isString())
                 return std::nullopt;
+            WTFLogAlways("%s", transportString.getString().utf8().data());
             auto transport = convertStringToAuthenticatorTransport(transportString.getString());
             if (transport)
                 transports.append(*transport);

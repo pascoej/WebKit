@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Apple Inc. All rights reserved.
+ * Copyright (C) 2022 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,36 +27,43 @@
 
 #if ENABLE(WEB_AUTHN)
 
-#include <wtf/Forward.h>
+#include <wtf/RefCounted.h>
+#include <wtf/RetainPtr.h>
+#include <wtf/RunLoop.h>
+#include <wtf/WeakPtr.h>
 
-namespace WebCore {
+OBJC_CLASS TKSmartCard;
 
-enum class AuthenticatorTransport {
-    Usb,
-    Nfc,
-    Ble,
-    Internal,
-    Cable,
-    Hybrid,
-    SmartCard
+namespace WebKit {
+
+class CCIDService;
+using DataReceivedCallback = Function<void(Vector<uint8_t>&&)>;
+
+class CCIDConnection : public RefCounted<CCIDConnection>, public CanMakeWeakPtr<CCIDConnection> {
+public:
+    static Ref<CCIDConnection> create(RetainPtr<TKSmartCard>&& smartCard, CCIDService&);
+    ~CCIDConnection();
+
+    void transact(Vector<uint8_t>&& data, DataReceivedCallback&&) const;
+    void stop() const;
+    bool contactless() const { return m_contactless; };
+
+private:
+    CCIDConnection(RetainPtr<TKSmartCard>&&, CCIDService&);
+
+    void restartPolling();
+    void startPolling();
+    
+    void detectContactless();
+    
+    void trySelectFidoApplet();
+
+    RetainPtr<TKSmartCard> m_smartCard;
+    WeakPtr<CCIDService> m_service;
+    RunLoop::Timer<CCIDConnection> m_retryTimer;
+    bool m_contactless { false };
 };
 
-} // namespace WebCore
-
-namespace WTF {
-
-template<> struct EnumTraits<WebCore::AuthenticatorTransport> {
-    using values = EnumValues<
-        WebCore::AuthenticatorTransport,
-        WebCore::AuthenticatorTransport::Usb,
-        WebCore::AuthenticatorTransport::Nfc,
-        WebCore::AuthenticatorTransport::Ble,
-        WebCore::AuthenticatorTransport::Internal,
-        WebCore::AuthenticatorTransport::Cable,
-        WebCore::AuthenticatorTransport::Hybrid
-    >;
-};
-
-} // namespace WTF
+} // namespace WebKit
 
 #endif // ENABLE(WEB_AUTHN)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Apple Inc. All rights reserved.
+ * Copyright (C) 2022 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,36 +27,32 @@
 
 #if ENABLE(WEB_AUTHN)
 
-#include <wtf/Forward.h>
+#include "FidoService.h"
+#include <wtf/RunLoop.h>
 
-namespace WebCore {
+namespace WebKit {
 
-enum class AuthenticatorTransport {
-    Usb,
-    Nfc,
-    Ble,
-    Internal,
-    Cable,
-    Hybrid,
-    SmartCard
+class CCIDConnection;
+
+class CCIDService : public FidoService {
+public:
+    explicit CCIDService(Observer&);
+    ~CCIDService();
+    
+    static bool isAvailable();
+
+    void didConnectTag();
+
+private:
+    void startDiscoveryInternal() final;
+    void restartDiscoveryInternal() final;
+    
+    virtual void platformStartDiscovery();
+
+    RunLoop::Timer<CCIDService> m_restartTimer;
+    RefPtr<CCIDConnection> m_connection;
 };
 
-} // namespace WebCore
-
-namespace WTF {
-
-template<> struct EnumTraits<WebCore::AuthenticatorTransport> {
-    using values = EnumValues<
-        WebCore::AuthenticatorTransport,
-        WebCore::AuthenticatorTransport::Usb,
-        WebCore::AuthenticatorTransport::Nfc,
-        WebCore::AuthenticatorTransport::Ble,
-        WebCore::AuthenticatorTransport::Internal,
-        WebCore::AuthenticatorTransport::Cable,
-        WebCore::AuthenticatorTransport::Hybrid
-    >;
-};
-
-} // namespace WTF
+} // namespace WebKit
 
 #endif // ENABLE(WEB_AUTHN)
