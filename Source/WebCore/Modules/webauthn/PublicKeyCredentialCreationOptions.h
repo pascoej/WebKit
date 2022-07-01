@@ -67,7 +67,7 @@ struct PublicKeyCredentialCreationOptions {
     struct AuthenticatorSelectionCriteria {
         std::optional<AuthenticatorAttachment> authenticatorAttachment;
         // residentKey replaces requireResidentKey, see: https://www.w3.org/TR/webauthn-2/#dictionary-authenticatorSelection
-        std::optional<ResidentKeyRequirement> residentKey;
+        std::optional<String> residentKey;
         bool requireResidentKey { false };
         UserVerificationRequirement userVerification { UserVerificationRequirement::Preferred };
 
@@ -84,7 +84,7 @@ struct PublicKeyCredentialCreationOptions {
     std::optional<unsigned> timeout;
     Vector<PublicKeyCredentialDescriptor> excludeCredentials;
     std::optional<AuthenticatorSelectionCriteria> authenticatorSelection;
-    AttestationConveyancePreference attestation;
+    String attestation;
     mutable std::optional<AuthenticationExtensionsClientInputs> extensions;
 
     template<class Encoder> void encode(Encoder&) const;
@@ -136,7 +136,7 @@ std::optional<PublicKeyCredentialCreationOptions::AuthenticatorSelectionCriteria
     if (!decoder.decode(result.userVerification))
         return std::nullopt;
 
-    std::optional<std::optional<ResidentKeyRequirement>> residentKey;
+    std::optional<std::optional<String>> residentKey;
     decoder >> residentKey;
     if (!residentKey)
         return std::nullopt;
@@ -192,7 +192,7 @@ std::optional<PublicKeyCredentialCreationOptions> PublicKeyCredentialCreationOpt
         return std::nullopt;
     result.authenticatorSelection = WTFMove(*authenticatorSelection);
 
-    std::optional<AttestationConveyancePreference> attestation;
+    std::optional<String> attestation;
     decoder >> attestation;
     if (!attestation)
         return std::nullopt;

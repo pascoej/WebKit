@@ -32,6 +32,7 @@
 #include "AuthenticatorResponse.h"
 #include "Document.h"
 #include "JSDOMPromiseDeferred.h"
+#include "JSAuthenticatorAttachment.h"
 #include "Page.h"
 #include "Settings.h"
 #include <wtf/text/Base64.h>
@@ -53,9 +54,12 @@ AuthenticationExtensionsClientOutputs PublicKeyCredential::getClientExtensionRes
     return m_response->extensions();
 }
 
-AuthenticatorAttachment PublicKeyCredential::authenticatorAttachment() const
+String PublicKeyCredential::authenticatorAttachment() const
 {
-    return m_response->attachment();
+    auto attachment = m_response->attachment();
+    if (WTF::isValidEnum<WebCore::AuthenticatorAttachment>(attachment))
+        return convertEnumerationToString(attachment);
+    return ""_s;
 }
 
 PublicKeyCredential::PublicKeyCredential(Ref<AuthenticatorResponse>&& response)

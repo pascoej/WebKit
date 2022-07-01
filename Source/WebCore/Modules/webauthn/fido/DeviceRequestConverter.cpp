@@ -104,8 +104,9 @@ Vector<uint8_t> encodeMakeCredenitalRequestAsCBOR(const Vector<uint8_t>& hash, c
     if (options.authenticatorSelection) {
         // Resident keys are not supported by default.
         if (options.authenticatorSelection->residentKey) {
-            if (*options.authenticatorSelection->residentKey == ResidentKeyRequirement::Required
-                || (*options.authenticatorSelection->residentKey == ResidentKeyRequirement::Preferred && residentKeyAvailability == AuthenticatorSupportedOptions::ResidentKeyAvailability::kSupported))
+            auto requirement = toResidentKeyRequirement(*options.authenticatorSelection->residentKey);
+            if (requirement == ResidentKeyRequirement::Required
+                || (requirement == ResidentKeyRequirement::Preferred && residentKeyAvailability == AuthenticatorSupportedOptions::ResidentKeyAvailability::kSupported))
                 optionMap[CBORValue(kResidentKeyMapKey)] = CBORValue(true);
         } else if (options.authenticatorSelection->requireResidentKey)
             optionMap[CBORValue(kResidentKeyMapKey)] = CBORValue(true);
@@ -156,7 +157,7 @@ Vector<uint8_t> encodeGetAssertionRequestAsCBOR(const Vector<uint8_t>& hash, con
     CBORValue::MapValue optionMap;
     // User verification is not required by default.
     bool requireUserVerification = false;
-    switch (options.userVerification) {
+    switch (toUserVerificationRequirement(options.userVerification).value_or(UserVerificationRequirement::Discouraged)) {
     case UserVerificationRequirement::Required:
     case UserVerificationRequirement::Preferred:
         requireUserVerification = uvCapability == UVAvailability::kSupportedAndConfigured;

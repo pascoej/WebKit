@@ -36,6 +36,17 @@ enum class UserVerificationRequirement {
     Preferred,
     Discouraged
 };
+std::optional<UserVerificationRequirement> toUserVerificationRequirement(const String& requirement);
+
+std::optional<UserVerificationRequirement> toUserVerificationRequirement(const String& requirement) {
+    if (requirement == "required"_s)
+        return UserVerificationRequirement::Required;
+    if (requirement == "preferred"_s)
+        return UserVerificationRequirement::Preferred;
+    if (requirement == "discouraged"_s)
+        return UserVerificationRequirement::Discouraged;
+    return std::nullopt;
+}
 
 } // namespace WebCore
 

@@ -37,6 +37,18 @@ enum class ResidentKeyRequirement : uint8_t {
     Discouraged
 };
 
+std::optional<ResidentKeyRequirement> toResidentKeyRequirement(const String& requirement);
+
+std::optional<ResidentKeyRequirement> toResidentKeyRequirement(const String& requirement) {
+    if (requirement == "required"_s)
+        return ResidentKeyRequirement::Required;
+    if (requirement == "preferred"_s)
+        return ResidentKeyRequirement::Preferred;
+    if (requirement == "discouraged"_s)
+        return ResidentKeyRequirement::Discouraged;
+    return std::nullopt;
+}
+
 } // namespace WebCore
 
 namespace WTF {

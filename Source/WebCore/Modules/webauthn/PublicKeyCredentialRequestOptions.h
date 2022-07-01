@@ -42,7 +42,7 @@ struct PublicKeyCredentialRequestOptions {
     std::optional<unsigned> timeout;
     mutable String rpId;
     Vector<PublicKeyCredentialDescriptor> allowCredentials;
-    UserVerificationRequirement userVerification { UserVerificationRequirement::Preferred };
+    String userVerification { "preferred"_s };
     std::optional<AuthenticatorAttachment> authenticatorAttachment;
     mutable std::optional<AuthenticationExtensionsClientInputs> extensions;
 
@@ -77,7 +77,7 @@ std::optional<PublicKeyCredentialRequestOptions> PublicKeyCredentialRequestOptio
     if (!decoder.decode(result.allowCredentials))
         return std::nullopt;
 
-    std::optional<UserVerificationRequirement> userVerification;
+    std::optional<String> userVerification;
     decoder >> userVerification;
     if (!userVerification)
         return std::nullopt;

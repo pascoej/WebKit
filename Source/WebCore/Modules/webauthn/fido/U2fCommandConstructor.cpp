@@ -94,7 +94,7 @@ bool isConvertibleToU2fRegisterCommand(const PublicKeyCredentialCreationOptions&
 
 bool isConvertibleToU2fSignCommand(const PublicKeyCredentialRequestOptions& request)
 {
-    return (request.userVerification != UserVerificationRequirement::Required) && !request.allowCredentials.isEmpty();
+    return (toUserVerificationRequirement(request.userVerification) != UserVerificationRequirement::Required) && !request.allowCredentials.isEmpty();
 }
 
 std::optional<Vector<uint8_t>> convertToU2fRegisterCommand(const Vector<uint8_t>& clientDataHash, const PublicKeyCredentialCreationOptions& request)
