@@ -68,6 +68,7 @@ CCIDConnection::~CCIDConnection()
 {
     stop();
 }
+
 const uint8_t kGetUidCommand[] = {
     0xFF, 0xCA, 0x00, 0x00, 0x00
 };
@@ -86,7 +87,6 @@ void CCIDConnection::detectContactless()
 
 void CCIDConnection::trySelectFidoApplet()
 {
-    WTFLogAlways("select applet %s", base64EncodeToString(vectorFromNSData([m_smartCard slot].ATR.bytes)).utf8().data());
     [m_smartCard transmitRequest:adoptNS([[NSData alloc] initWithBytes:kCtapNfcAppletSelectionCommand length:sizeof(kCtapNfcAppletSelectionCommand)]).get() reply:makeBlockPtr([this](NSData * _Nullable versionData, NSError * _Nullable error) {
         if (compareVersion(versionData, kCtapNfcAppletSelectionU2f, sizeof(kCtapNfcAppletSelectionU2f))
             || compareVersion(versionData, kCtapNfcAppletSelectionCtap, sizeof(kCtapNfcAppletSelectionCtap))) {
@@ -94,30 +94,24 @@ void CCIDConnection::trySelectFidoApplet()
                 if (m_service)
                     m_service->didConnectTag();
             });
-            WTFLogAlways("conn tag");
             return;
         }
             [m_smartCard transmitRequest:adoptNS([[NSData alloc] initWithBytes:kCtapNfcU2fVersionCommand length:sizeof(kCtapNfcU2fVersionCommand)]).get() reply:makeBlockPtr([this](NSData * _Nullable versionData, NSError * _Nullable error) {
                 if (compareVersion(versionData, kCtapNfcAppletSelectionU2f, sizeof(kCtapNfcAppletSelectionU2f))) {
                     callOnMainRunLoop([this] () mutable {
-                        WTFLogAlways("conn tag");
                         if (m_service)
                             m_service->didConnectTag();
                     });
                     return;
                 }
-                WTFLogAlways("end");
-                [m_smartCard endSession];
             }).get()];
     }).get()];
 }
 
 void CCIDConnection::transact(Vector<uint8_t>&& data, DataReceivedCallback&& callback) const
 {
-    WTFLogAlways("transact");
     [m_smartCard transmitRequest:adoptNS([[NSData alloc] initWithBytes:data.data() length:data.size()]).autorelease() reply:makeBlockPtr([this,callback = WTFMove(callback)](NSData * _Nullable nsResponse, NSError * _Nullable error) mutable {
         auto response = vectorFromNSData(nsResponse);
-        WTFLogAlways("resp: %s", base64EncodeToString(response).utf8().data());
         callOnMainRunLoop([this,response = WTFMove(response), callback = WTFMove(callback)] () mutable {
             callback(WTFMove(response));
             (void)this;
@@ -128,8 +122,7 @@ void CCIDConnection::transact(Vector<uint8_t>&& data, DataReceivedCallback&& cal
 
 void CCIDConnection::stop() const
 {
-    WTFLogAlways("stop");
-    //[m_smartCard endSession];
+    
 }
 
 // NearField polling is a one shot polling. It halts after tags are detected.

@@ -40,6 +40,7 @@ CtapCcidDriver::CtapCcidDriver(Ref<CCIDConnection>&& connection, WebCore::Authen
 : CtapDriver(transport)
     , m_connection(WTFMove(connection))
 {
+    WTFLogAlways("transport: %d",(int) transport);
 }
 
 // FIXME(200934): Support NFCCTAP_GETRESPONSE

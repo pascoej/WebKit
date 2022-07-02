@@ -53,7 +53,8 @@ template<> struct EnumTraits<WebCore::AuthenticatorTransport> {
         WebCore::AuthenticatorTransport::Ble,
         WebCore::AuthenticatorTransport::Internal,
         WebCore::AuthenticatorTransport::Cable,
-        WebCore::AuthenticatorTransport::Hybrid
+        WebCore::AuthenticatorTransport::Hybrid,
+        WebCore::AuthenticatorTransport::SmartCard
     >;
 };
 

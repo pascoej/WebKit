@@ -29,6 +29,10 @@
 
 #include "FidoService.h"
 #include <wtf/RunLoop.h>
+#include <wtf/RetainPtr.h>
+
+OBJC_CLASS TKSmartCardSlot;
+OBJC_CLASS TKSmartCard;
 
 namespace WebKit {
 
@@ -42,6 +46,9 @@ public:
     static bool isAvailable();
 
     void didConnectTag();
+    
+    void updateSlots(NSArray *slots);
+    void onValidCard(RetainPtr<TKSmartCard>&& smartCard);
 
 private:
     void startDiscoveryInternal() final;
@@ -51,6 +58,7 @@ private:
 
     RunLoop::Timer<CCIDService> m_restartTimer;
     RefPtr<CCIDConnection> m_connection;
+    HashSet<String> m_slotNames;
 };
 
 } // namespace WebKit
