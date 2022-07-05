@@ -27,41 +27,38 @@
 
 #if ENABLE(WEB_AUTHN)
 
-#include <wtf/RefCounted.h>
-#include <wtf/RetainPtr.h>
+#include "FidoService.h"
 #include <wtf/RunLoop.h>
-#include <wtf/WeakPtr.h>
+#include <wtf/RetainPtr.h>
 
+OBJC_CLASS TKSmartCardSlot;
 OBJC_CLASS TKSmartCard;
 
 namespace WebKit {
 
-class CcidService;
-using DataReceivedCallback = Function<void(Vector<uint8_t>&&)>;
+class CCIDConnection;
 
-class CcidConnection : public RefCounted<CcidConnection>, public CanMakeWeakPtr<CcidConnection> {
+class CcidService : public FidoService {
 public:
-    static Ref<CcidConnection> create(RetainPtr<TKSmartCard>&& smartCard, CcidService&);
-    ~CcidConnection();
+    explicit CcidService(Observer&);
+    ~CcidService();
+    
+    static bool isAvailable();
 
-    void transact(Vector<uint8_t>&& data, DataReceivedCallback&&) const;
-    void stop() const;
-    bool contactless() const { return m_contactless; };
+    void didConnectTag();
+    
+    void updateSlots(NSArray *slots);
+    void onValidCard(RetainPtr<TKSmartCard>&& smartCard);
 
 private:
-    CcidConnection(RetainPtr<TKSmartCard>&&, CcidService&);
-
-    void restartPolling();
-    void startPolling();
+    void startDiscoveryInternal() final;
+    void restartDiscoveryInternal() final;
     
-    void detectContactless();
-    
-    void trySelectFidoApplet();
+    virtual void platformStartDiscovery();
 
-    RetainPtr<TKSmartCard> m_smartCard;
-    WeakPtr<CcidService> m_service;
-    RunLoop::Timer<CcidConnection> m_retryTimer;
-    bool m_contactless { false };
+    RunLoop::Timer<CcidService> m_restartTimer;
+    RefPtr<CcidConnection> m_connection;
+    HashSet<String> m_slotNames;
 };
 
 } // namespace WebKit

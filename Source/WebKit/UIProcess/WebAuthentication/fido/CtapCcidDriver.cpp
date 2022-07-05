@@ -40,10 +40,8 @@ CtapCcidDriver::CtapCcidDriver(Ref<CCIDConnection>&& connection, WebCore::Authen
 : CtapDriver(transport)
     , m_connection(WTFMove(connection))
 {
-    WTFLogAlways("transport: %d",(int) transport);
 }
 
-// FIXME(200934): Support NFCCTAP_GETRESPONSE
 void CtapCcidDriver::transact(Vector<uint8_t>&& data, ResponseCallback&& callback)
 {
     // For CTAP2, commands follow:
@@ -83,7 +81,6 @@ void CtapCcidDriver::transact(Vector<uint8_t>&& data, ResponseCallback&& callbac
     m_connection->transact(WTFMove(data), WTFMove(callback));
 }
 
-// Return the response async to match the HID behaviour, such that nfc could fit into the current infra.
 void CtapCcidDriver::respondAsync(ResponseCallback&& callback, Vector<uint8_t>&& response) const
 {
     RunLoop::main().dispatch([callback = WTFMove(callback), response = WTFMove(response)] () mutable {

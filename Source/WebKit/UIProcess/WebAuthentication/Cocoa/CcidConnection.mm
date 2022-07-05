@@ -24,10 +24,10 @@
  */
 
 #import "config.h"
-#import "CCIDConnection.h"
+#import "CcidConnection.h"
 
 #if ENABLE(WEB_AUTHN)
-#import "CCIDService.h"
+#import "CcidService.h"
 #import <WebCore/FidoConstants.h>
 #import <wtf/cocoa/VectorCocoa.h>
 #import <wtf/text/Base64.h>
@@ -51,20 +51,20 @@ inline bool compareVersion(NSData *data, const uint8_t version[], size_t version
 
 } // namespace
 
-Ref<CCIDConnection> CCIDConnection::create(RetainPtr<TKSmartCard>&& smartCard, CCIDService& service)
+Ref<CcidConnection> CcidConnection::create(RetainPtr<TKSmartCard>&& smartCard, CcidService& service)
 {
-    return adoptRef(*new CCIDConnection(WTFMove(smartCard), service));
+    return adoptRef(*new CcidConnection(WTFMove(smartCard), service));
 }
 
-CCIDConnection::CCIDConnection(RetainPtr<TKSmartCard>&& smartCard, CCIDService& service)
+CcidConnection::CcidConnection(RetainPtr<TKSmartCard>&& smartCard, CcidService& service)
 : m_smartCard(WTFMove(smartCard))
 , m_service(service)
-, m_retryTimer(RunLoop::main(), this, &CCIDConnection::startPolling)
+, m_retryTimer(RunLoop::main(), this, &CcidConnection::startPolling)
 {
     startPolling();
 }
 
-CCIDConnection::~CCIDConnection()
+CcidConnection::~CcidConnection()
 {
     stop();
 }
@@ -73,7 +73,7 @@ const uint8_t kGetUidCommand[] = {
     0xFF, 0xCA, 0x00, 0x00, 0x00
 };
 
-void CCIDConnection::detectContactless()
+void CcidConnection::detectContactless()
 {
     [m_smartCard transmitRequest:adoptNS([[NSData alloc] initWithBytes:kGetUidCommand length:sizeof(kGetUidCommand)]).get() reply:makeBlockPtr([this](NSData * _Nullable versionData, NSError * _Nullable error) {
         // Only contactless smart cards have uid, check for longer length than apdu status
@@ -85,7 +85,7 @@ void CCIDConnection::detectContactless()
     }).get()];
 }
 
-void CCIDConnection::trySelectFidoApplet()
+void CcidConnection::trySelectFidoApplet()
 {
     [m_smartCard transmitRequest:adoptNS([[NSData alloc] initWithBytes:kCtapNfcAppletSelectionCommand length:sizeof(kCtapNfcAppletSelectionCommand)]).get() reply:makeBlockPtr([this](NSData * _Nullable versionData, NSError * _Nullable error) {
         if (compareVersion(versionData, kCtapNfcAppletSelectionU2f, sizeof(kCtapNfcAppletSelectionU2f))
@@ -108,7 +108,7 @@ void CCIDConnection::trySelectFidoApplet()
     }).get()];
 }
 
-void CCIDConnection::transact(Vector<uint8_t>&& data, DataReceivedCallback&& callback) const
+void CcidConnection::transact(Vector<uint8_t>&& data, DataReceivedCallback&& callback) const
 {
     [m_smartCard transmitRequest:adoptNS([[NSData alloc] initWithBytes:data.data() length:data.size()]).autorelease() reply:makeBlockPtr([this,callback = WTFMove(callback)](NSData * _Nullable nsResponse, NSError * _Nullable error) mutable {
         auto response = vectorFromNSData(nsResponse);
@@ -120,19 +120,19 @@ void CCIDConnection::transact(Vector<uint8_t>&& data, DataReceivedCallback&& cal
 }
 
 
-void CCIDConnection::stop() const
+void CcidConnection::stop() const
 {
     
 }
 
 // NearField polling is a one shot polling. It halts after tags are detected.
 // Therefore, a restart process is needed to resume polling after error.
-void CCIDConnection::restartPolling()
+void CcidConnection::restartPolling()
 {
     m_retryTimer.startOneShot(1_s); // Magic number to give users enough time for reactions.
 }
 
-void CCIDConnection::startPolling()
+void CcidConnection::startPolling()
 {
     [m_smartCard beginSessionWithReply:makeBlockPtr([this] (BOOL success, NSError *error) mutable {
         detectContactless();

@@ -24,73 +24,73 @@
  */
 
 #import "config.h"
-#import "CCIDService.h"
+#import "CcidService.h"
 
 #if ENABLE(WEB_AUTHN)
 
-#import "CtapCCIDDriver.h"
-#import "CCIDConnection.h"
+#import "CtapCcidDriver.h"
+#import "CcidConnection.h"
 #import <wtf/BlockPtr.h>
 #import <wtf/RunLoop.h>
 #import <CryptoTokenKit/TKSmartCard.h>
 #import <WebCore/AuthenticatorTransport.h>
 
 @interface _WKSmartCardSlotObserver : NSObject {
-    WeakPtr<WebKit::CCIDService> m_service;
+    WeakPtr<WebKit::CcidService> m_service;
 }
 
-- (instancetype)initWithService:(WeakPtr<WebKit::CCIDService>&&)service;
+- (instancetype)initWithService:(WeakPtr<WebKit::CcidService>&&)service;
 - (void)observeValueForKeyPath:(id)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
 @end
 
 @interface _WKSmartCardSlotStateObserver : NSObject {
-    WeakPtr<WebKit::CCIDService> m_service;
+    WeakPtr<WebKit::CcidService> m_service;
     RetainPtr<TKSmartCardSlot> m_slot;
 }
 
-- (instancetype)initWithService:(WeakPtr<WebKit::CCIDService>&&)service slot:(RetainPtr<TKSmartCardSlot>&&)slot;
+- (instancetype)initWithService:(WeakPtr<WebKit::CcidService>&&)service slot:(RetainPtr<TKSmartCardSlot>&&)slot;
 - (void)observeValueForKeyPath:(id)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
 @end
 
 namespace WebKit {
 
-CCIDService::CCIDService(Observer& observer)
+CcidService::CcidService(Observer& observer)
     : FidoService(observer)
-    , m_restartTimer(RunLoop::main(), this, &CCIDService::platformStartDiscovery)
+    , m_restartTimer(RunLoop::main(), this, &CcidService::platformStartDiscovery)
 {
 }
 
-CCIDService::~CCIDService()
+CcidService::~CcidService()
 {
 }
 
-void CCIDService::didConnectTag()
+void CcidService::didConnectTag()
 {
     auto connection = m_connection;
     getInfo(WTF::makeUnique<CtapCcidDriver>(connection.releaseNonNull(), m_connection->contactless() ? WebCore::AuthenticatorTransport::Nfc : WebCore::AuthenticatorTransport::SmartCard));
 }
 
-void CCIDService::startDiscoveryInternal()
+void CcidService::startDiscoveryInternal()
 {
     platformStartDiscovery();
 }
 
-void CCIDService::restartDiscoveryInternal()
+void CcidService::restartDiscoveryInternal()
 {
     m_restartTimer.startOneShot(1_s); // Magic number to give users enough time for reactions.
 }
 
-void CCIDService::platformStartDiscovery()
+void CcidService::platformStartDiscovery()
 {
     [[TKSmartCardSlotManager defaultManager] addObserver:[[_WKSmartCardSlotObserver alloc] initWithService:this] forKeyPath:@"slotNames" options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionInitial context:nil];
 }
 
-void CCIDService::onValidCard(RetainPtr<TKSmartCard>&& smartCard)
+void CcidService::onValidCard(RetainPtr<TKSmartCard>&& smartCard)
 {
-    m_connection = WebKit::CCIDConnection::create(WTFMove(smartCard), *this);
+    m_connection = WebKit::CcidConnection::create(WTFMove(smartCard), *this);
 }
 
-void CCIDService::updateSlots(NSArray *slots)
+void CcidService::updateSlots(NSArray *slots)
 {
     HashSet<String> slotsSet;
     for (NSString *nsName : slots) {
@@ -117,7 +117,7 @@ void CCIDService::updateSlots(NSArray *slots)
 } // namespace WebKit
 
 @implementation _WKSmartCardSlotObserver
-- (instancetype)initWithService:(WeakPtr<WebKit::CCIDService>&&)service
+- (instancetype)initWithService:(WeakPtr<WebKit::CcidService>&&)service
 {
     if (!(self = [super init]))
         return nil;
@@ -142,7 +142,7 @@ void CCIDService::updateSlots(NSArray *slots)
 @end
 
 @implementation _WKSmartCardSlotStateObserver
-- (instancetype)initWithService:(WeakPtr<WebKit::CCIDService>&&)service slot:(RetainPtr<TKSmartCardSlot>&&)slot
+- (instancetype)initWithService:(WeakPtr<WebKit::CcidService>&&)service slot:(RetainPtr<TKSmartCardSlot>&&)slot
 {
     if (!(self = [super init]))
         return nil;

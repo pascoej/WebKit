@@ -28,7 +28,7 @@
 
 #if ENABLE(WEB_AUTHN)
 
-#include "CCIDService.h"
+#include "CcidService.h"
 #include "HidService.h"
 #include "LocalService.h"
 #include "MockHidService.h"
@@ -49,7 +49,7 @@ UniqueRef<AuthenticatorTransportService> AuthenticatorTransportService::create(W
     case WebCore::AuthenticatorTransport::Nfc:
         return makeUniqueRef<NfcService>(observer);
     case WebCore::AuthenticatorTransport::SmartCard:
-        return makeUniqueRef<CCIDService>(observer);
+        return makeUniqueRef<CcidService>(observer);
     default:
         ASSERT_NOT_REACHED();
         return makeUniqueRef<LocalService>(observer);

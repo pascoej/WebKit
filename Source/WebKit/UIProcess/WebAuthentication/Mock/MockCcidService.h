@@ -27,38 +27,21 @@
 
 #if ENABLE(WEB_AUTHN)
 
-#include "FidoService.h"
-#include <wtf/RunLoop.h>
-#include <wtf/RetainPtr.h>
-
-OBJC_CLASS TKSmartCardSlot;
-OBJC_CLASS TKSmartCard;
+#include "CcidService.h"
+#include <WebCore/MockWebAuthenticationConfiguration.h>
 
 namespace WebKit {
 
-class CCIDConnection;
-
-class CCIDService : public FidoService {
+class MockCcidService final : public CCIDService {
 public:
-    explicit CCIDService(Observer&);
-    ~CCIDService();
+    MockCcidService(Observer&, const WebCore::MockWebAuthenticationConfiguration&);
     
-    static bool isAvailable();
-
-    void didConnectTag();
-    
-    void updateSlots(NSArray *slots);
-    void onValidCard(RetainPtr<TKSmartCard>&& smartCard);
+    RetainPtr<NSData> nextReply();
 
 private:
-    void startDiscoveryInternal() final;
-    void restartDiscoveryInternal() final;
-    
-    virtual void platformStartDiscovery();
+    void platformStartDiscovery() final;
 
-    RunLoop::Timer<CCIDService> m_restartTimer;
-    RefPtr<CCIDConnection> m_connection;
-    HashSet<String> m_slotNames;
+    WebCore::MockWebAuthenticationConfiguration m_configuration;
 };
 
 } // namespace WebKit
