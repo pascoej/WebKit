@@ -153,6 +153,7 @@ WebResourceLoadStatisticsStore::WebResourceLoadStatisticsStore(NetworkSession& n
     , m_dailyTasksTimer(RunLoop::main(), this, &WebResourceLoadStatisticsStore::performDailyTasks)
     , m_isEphemeral(isEphemeral)
 {
+                    WTFLogAlways("!!!!!!!!!!!! started!!");
     RELEASE_ASSERT(RunLoop::isMain());
 
     // No daily tasks needed for ephemeral sessions since no resource load statistics are collected.
@@ -657,18 +658,23 @@ void WebResourceLoadStatisticsStore::setStandaloneApplicationDomain(const Regist
 void WebResourceLoadStatisticsStore::setAppBoundDomains(HashSet<RegistrableDomain>&& domains, CompletionHandler<void()>&& completionHandler)
 {
     ASSERT(RunLoop::isMain());
+    WTFLogAlways("!!!!!!!!!!!! started!!");
 
     if (isEphemeral() || domains.isEmpty()) {
         completionHandler();
         return;
     }
+    WTFLogAlways("!!!!!!!!!!!! start333333ed!!");
 
     auto domainsCopy = crossThreadCopy(domains);
 
     if (m_networkSession) {
+        WTFLogAlways("!!!!!!!!!!!! start4444ed!!");
+
         if (auto* storageSession = m_networkSession->networkStorageSession()) {
             storageSession->setAppBoundDomains(WTFMove(domains));
             storageSession->setThirdPartyCookieBlockingMode(ThirdPartyCookieBlockingMode::AllExceptBetweenAppBoundDomains);
+            WTFLogAlways("!!!!!!!!!!!! netwo555rk");
         }
     }
 
@@ -676,6 +682,10 @@ void WebResourceLoadStatisticsStore::setAppBoundDomains(HashSet<RegistrableDomai
         if (m_statisticsStore) {
             m_statisticsStore->setAppBoundDomains(WTFMove(domains));
             m_statisticsStore->setThirdPartyCookieBlockingMode(ThirdPartyCookieBlockingMode::AllExceptBetweenAppBoundDomains);
+                        WTFLogAlways("!!!!!!!!!!!! netwo7   rk222");
+
+            WTFLogAlways("!!!!!!!!!!!! starte666d!!");
+
         }
         postTaskReply(WTFMove(completionHandler));
     });

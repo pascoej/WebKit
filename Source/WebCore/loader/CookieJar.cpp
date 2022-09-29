@@ -69,6 +69,8 @@ SameSiteInfo CookieJar::sameSiteInfo(const Document& document, IsForDOMCookieAcc
 CookieJar::CookieJar(Ref<StorageSessionProvider>&& storageSessionProvider)
     : m_storageSessionProvider(WTFMove(storageSessionProvider))
 {
+                        WTFLogAlways("!!!!!!!!!!!! BLEASE");
+
 }
 
 CookieJar::~CookieJar() = default;

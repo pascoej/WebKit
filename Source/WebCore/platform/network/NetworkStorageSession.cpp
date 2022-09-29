@@ -134,38 +134,61 @@ bool NetworkStorageSession::shouldBlockCookies(const ResourceRequest& request, s
     
 bool NetworkStorageSession::shouldBlockCookies(const URL& firstPartyForCookies, const URL& resource, std::optional<FrameIdentifier> frameID, std::optional<PageIdentifier> pageID, ShouldRelaxThirdPartyCookieBlocking shouldRelaxThirdPartyCookieBlocking) const
 {
+                WTFLogAlways("!!!!!!!!!!!! nowot %s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
+
     if (shouldRelaxThirdPartyCookieBlocking == ShouldRelaxThirdPartyCookieBlocking::Yes)
         return false;
+    WTFLogAlways("!!!!!!!!!!!! nowot 11%s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
 
     if (!m_isResourceLoadStatisticsEnabled)
         return false;
+    WTFLogAlways("!!!!!!!!!!!! nowot2222 %s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
 
     RegistrableDomain firstPartyDomain { firstPartyForCookies };
     if (firstPartyDomain.isEmpty())
         return false;
+    WTFLogAlways("!!!!!!!!!!!! nowot 3335%s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
 
     RegistrableDomain resourceDomain { resource };
     if (resourceDomain.isEmpty())
         return false;
+    WTFLogAlways("!!!!!!!!!!!! nowot55 %s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
 
     if (firstPartyDomain == resourceDomain)
         return false;
+    WTFLogAlways("!!!!!!!!!!!! nowot 77%s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
 
     if (pageID && hasStorageAccess(resourceDomain, firstPartyDomain, frameID, pageID.value()))
         return false;
+    WTFLogAlways("!!!!!!!!!!!! nowot88 %s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
 
     switch (m_thirdPartyCookieBlockingMode) {
     case ThirdPartyCookieBlockingMode::All:
-        return true;
+            WTFLogAlways("!!!!!!!!!!!! nowot99 %s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
+
+            return true;
     case ThirdPartyCookieBlockingMode::AllExceptBetweenAppBoundDomains:
-        return !shouldExemptDomainPairFromThirdPartyCookieBlocking(firstPartyDomain, resourceDomain);
+            WTFLogAlways("!!!!!!!!!!!! nowot7765 %s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
+
+            return !shouldExemptDomainPairFromThirdPartyCookieBlocking(firstPartyDomain, resourceDomain);
+        case ThirdPartyCookieBlockingMode::AllExceptManagedDomains: {
+            WTFLogAlways("!!!!!!!!!!!! thats crazzzzy %s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
+            
+            return !m_managedDomains.contains(firstPartyDomain) || !hasHadUserInteractionAsFirstParty(firstPartyDomain);
+        }
     case ThirdPartyCookieBlockingMode::AllOnSitesWithoutUserInteraction:
-        if (!hasHadUserInteractionAsFirstParty(firstPartyDomain))
+            WTFLogAlways("!!!!!!!!!!!! nowot 4567%s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
+
+            if (!hasHadUserInteractionAsFirstParty(firstPartyDomain))
             return true;
         FALLTHROUGH;
     case ThirdPartyCookieBlockingMode::OnlyAccordingToPerDomainPolicy:
-        return shouldBlockThirdPartyCookies(resourceDomain);
+            WTFLogAlways("!!!!!!!!!!!! nowot45654 %s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
+
+            return shouldBlockThirdPartyCookies(resourceDomain);
     }
+    WTFLogAlways("!!!!!!!!!!!! nowot %s %s456789", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
+
     ASSERT_NOT_REACHED();
     return false;
 }

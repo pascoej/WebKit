@@ -77,6 +77,8 @@ static std::atomic<bool> hasInitializedAppBoundDomains = false;
 static std::atomic<bool> keyExists = false;
 #endif
 
+static std::atomic<bool> hasInitializedManagedDomains = false;
+
 // FIXME: we should not read the values from NSUserDefaults; we should let clients who set the values to pass them via configuration.
 static bool internalFeatureEnabled(const String& key, bool defaultValue = false)
 {
@@ -600,6 +602,109 @@ void WebsiteDataStore::reinitializeAppBoundDomains()
     initializeAppBoundDomains(ForceReinitialization::Yes);
 }
 #endif
+
+
+
+static HashSet<WebCore::RegistrableDomain>& managedDomains()
+{
+    ASSERT(RunLoop::isMain());
+    static NeverDestroyed<HashSet<WebCore::RegistrableDomain>> managedDomains;
+    return managedDomains;
+}
+
+void WebsiteDataStore::initializeManagedDomains(ForceReinitialization forceReinitialization)
+{
+    ASSERT(RunLoop::isMain());
+
+    if (hasInitializedManagedDomains && forceReinitialization != ForceReinitialization::Yes)
+        return;
+    
+    static const auto maxManagedDomainCount = 10;
+    
+    appBoundDomainQueue().dispatch([forceReinitialization] () mutable {
+        if (hasInitializedManagedDomains && forceReinitialization != ForceReinitialization::Yes)
+            return;
+        
+        NSArray<NSString *> *appBoundData = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"WKAppBoundDomains"];
+        keyExists = appBoundData ? true : false;
+        
+        RunLoop::main().dispatch([forceReinitialization, appBoundData = retainPtr(appBoundData)] {
+            if (hasInitializedManagedDomains && forceReinitialization != ForceReinitialization::Yes)
+                return;
+
+            if (forceReinitialization == ForceReinitialization::Yes)
+                managedDomains().clear();
+
+            for (NSString *data in appBoundData.get()) {
+                if (managedDomains().size() >= maxManagedDomainCount)
+                    break;
+
+                URL url { data };
+                if (url.protocol().isEmpty())
+                    url.setProtocol("https"_s);
+                if (!url.isValid())
+                    continue;
+                WebCore::RegistrableDomain appBoundDomain { url };
+                if (appBoundDomain.isEmpty())
+                    continue;
+                managedDomains().add(appBoundDomain);
+            }
+            hasInitializedManagedDomains = true;
+            if (isManagedITPRelaxationEnabled)
+                forwardManagedDomainsToITPIfInitialized([] { });
+        });
+    });
+}
+
+void WebsiteDataStore::ensureManagedDomains(CompletionHandler<void(const HashSet<WebCore::RegistrableDomain>&)>&& completionHandler) const
+{
+    if (hasInitializedManagedDomains) {
+        completionHandler(managedDomains());
+        return;
+    }
+
+    // Hopping to the background thread then back to the main thread
+    // ensures that initializeManagedDomains() has finished.
+    managedDomainQueue().dispatch([this, protectedThis = Ref { *this }, completionHandler = WTFMove(completionHandler)] () mutable {
+        RunLoop::main().dispatch([this, protectedThis = WTFMove(protectedThis), completionHandler = WTFMove(completionHandler)] () mutable {
+            ASSERT(hasInitializedManagedDomains);
+            completionHandler(appBoundDomains());
+        });
+    });
+}
+
+void WebsiteDataStore::getManagedDomains(CompletionHandler<void(const HashSet<WebCore::RegistrableDomain>&)>&& completionHandler) const
+{
+    ASSERT(RunLoop::isMain());
+
+    ensureManagedDomains([completionHandler = WTFMove(completionHandler)] (auto& domains) mutable {
+        completionHandler(domains);
+    });
+}
+
+std::optional<HashSet<WebCore::RegistrableDomain>> WebsiteDataStore::managedDomainsIfInitialized()
+{
+    ASSERT(RunLoop::isMain());
+    if (!hasInitializedManagedDomains)
+        return std::nullopt;
+    return managedDomains();
+}
+
+void WebsiteDataStore::setManagedDomainsForTesting(HashSet<WebCore::RegistrableDomain>&& domains, CompletionHandler<void()>&& completionHandler)
+{
+    for (auto& domain : domains)
+        RELEASE_ASSERT(domain == "localhost"_s || domain == "127.0.0.1"_s);
+
+    managedDomains() = WTFMove(domains);
+    hasInitializedManagedDomains = true;
+    forwardManagedDomainsToITPIfInitialized(WTFMove(completionHandler));
+}
+
+void WebsiteDataStore::reinitializeManagedDomains()
+{
+    hasInitializedManagedDomains = false;
+    initializeManagedDomains(ForceReinitialization::Yes);
+}
 
 bool WebsiteDataStore::networkProcessHasEntitlementForTesting(const String& entitlement)
 {
