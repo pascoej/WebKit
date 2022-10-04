@@ -77,7 +77,13 @@ static std::atomic<bool> hasInitializedAppBoundDomains = false;
 static std::atomic<bool> keyExists = false;
 #endif
 
+static WorkQueue& managedDomainQueue()
+{
+    static auto& queue = WorkQueue::create("com.apple.WebKit.ManagedDomains").leakRef();
+    return queue;
+}
 static std::atomic<bool> hasInitializedManagedDomains = false;
+static std::atomic<bool> managedKeyExists = false;
 
 // FIXME: we should not read the values from NSUserDefaults; we should let clients who set the values to pass them via configuration.
 static bool internalFeatureEnabled(const String& key, bool defaultValue = false)
@@ -621,12 +627,12 @@ void WebsiteDataStore::initializeManagedDomains(ForceReinitialization forceReini
     
     static const auto maxManagedDomainCount = 10;
     
-    appBoundDomainQueue().dispatch([forceReinitialization] () mutable {
+    managedDomainQueue().dispatch([forceReinitialization] () mutable {
         if (hasInitializedManagedDomains && forceReinitialization != ForceReinitialization::Yes)
             return;
         
         NSArray<NSString *> *appBoundData = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"WKAppBoundDomains"];
-        keyExists = appBoundData ? true : false;
+        managedKeyExists = appBoundData ? true : false;
         
         RunLoop::main().dispatch([forceReinitialization, appBoundData = retainPtr(appBoundData)] {
             if (hasInitializedManagedDomains && forceReinitialization != ForceReinitialization::Yes)
@@ -665,10 +671,10 @@ void WebsiteDataStore::ensureManagedDomains(CompletionHandler<void(const HashSet
 
     // Hopping to the background thread then back to the main thread
     // ensures that initializeManagedDomains() has finished.
-    managedDomainQueue().dispatch([this, protectedThis = Ref { *this }, completionHandler = WTFMove(completionHandler)] () mutable {
-        RunLoop::main().dispatch([this, protectedThis = WTFMove(protectedThis), completionHandler = WTFMove(completionHandler)] () mutable {
+    managedDomainQueue().dispatch([protectedThis = Ref { *this }, completionHandler = WTFMove(completionHandler)] () mutable {
+        RunLoop::main().dispatch([protectedThis = WTFMove(protectedThis), completionHandler = WTFMove(completionHandler)] () mutable {
             ASSERT(hasInitializedManagedDomains);
-            completionHandler(appBoundDomains());
+            completionHandler(managedDomains());
         });
     });
 }
