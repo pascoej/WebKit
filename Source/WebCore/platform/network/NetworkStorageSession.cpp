@@ -134,33 +134,26 @@ bool NetworkStorageSession::shouldBlockCookies(const ResourceRequest& request, s
     
 bool NetworkStorageSession::shouldBlockCookies(const URL& firstPartyForCookies, const URL& resource, std::optional<FrameIdentifier> frameID, std::optional<PageIdentifier> pageID, ShouldRelaxThirdPartyCookieBlocking shouldRelaxThirdPartyCookieBlocking) const
 {
-                WTFLogAlways("!!!!!!!!!!!! nowot %s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
 
     if (shouldRelaxThirdPartyCookieBlocking == ShouldRelaxThirdPartyCookieBlocking::Yes)
         return false;
-    WTFLogAlways("!!!!!!!!!!!! nowot 11%s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
 
     if (!m_isResourceLoadStatisticsEnabled)
         return false;
-    WTFLogAlways("!!!!!!!!!!!! nowot2222 %s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
 
     RegistrableDomain firstPartyDomain { firstPartyForCookies };
     if (firstPartyDomain.isEmpty())
         return false;
-    WTFLogAlways("!!!!!!!!!!!! nowot 3335%s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
 
     RegistrableDomain resourceDomain { resource };
     if (resourceDomain.isEmpty())
         return false;
-    WTFLogAlways("!!!!!!!!!!!! nowot55 %s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
 
     if (firstPartyDomain == resourceDomain)
         return false;
-    WTFLogAlways("!!!!!!!!!!!! nowot 77%s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
 
     if (pageID && hasStorageAccess(resourceDomain, firstPartyDomain, frameID, pageID.value()))
         return false;
-    WTFLogAlways("!!!!!!!!!!!! nowot88 %s %s", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
 
     switch (m_thirdPartyCookieBlockingMode) {
     case ThirdPartyCookieBlockingMode::All:
@@ -187,7 +180,6 @@ bool NetworkStorageSession::shouldBlockCookies(const URL& firstPartyForCookies, 
 
             return shouldBlockThirdPartyCookies(resourceDomain);
     }
-    WTFLogAlways("!!!!!!!!!!!! nowot %s %s456789", firstPartyForCookies.string().utf8().data(), resource.string().utf8().data());
 
     ASSERT_NOT_REACHED();
     return false;
@@ -392,6 +384,16 @@ void NetworkStorageSession::resetAppBoundDomains()
     m_appBoundDomains.clear();
 }
 #endif
+
+void NetworkStorageSession::setManagedDomains(HashSet<RegistrableDomain>&& domains)
+{
+    m_managedDomains = WTFMove(domains);
+}
+
+void NetworkStorageSession::resetManagedDomains()
+{
+    m_managedDomains.clear();
+}
 
 std::optional<Seconds> NetworkStorageSession::clientSideCookieCap(const RegistrableDomain& firstParty, std::optional<PageIdentifier> pageID) const
 {

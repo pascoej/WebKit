@@ -286,6 +286,11 @@ void ResourceLoadStatisticsStore::setAppBoundDomains(HashSet<RegistrableDomain>&
 }
 #endif
 
+void ResourceLoadStatisticsStore::setManagedDomains(HashSet<RegistrableDomain>&& domains)
+{
+    m_managedDomains = WTFMove(domains);
+}
+
 void ResourceLoadStatisticsStore::scheduleStatisticsProcessingRequestIfNecessary()
 {
     ASSERT(!RunLoop::isMain());

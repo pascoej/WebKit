@@ -223,6 +223,7 @@ public:
 #if ENABLE(APP_BOUND_DOMAINS)
     void setAppBoundDomains(HashSet<RegistrableDomain>&&, CompletionHandler<void()>&&);
 #endif
+    void setManagedDomains(HashSet<RegistrableDomain>&&, CompletionHandler<void()>&&);
     void didCreateNetworkProcess();
 
     void notifyResourceLoadStatisticsProcessed();

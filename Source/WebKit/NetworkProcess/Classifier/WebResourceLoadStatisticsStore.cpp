@@ -692,6 +692,42 @@ void WebResourceLoadStatisticsStore::setAppBoundDomains(HashSet<RegistrableDomai
 }
 #endif
 
+void WebResourceLoadStatisticsStore::setManagedDomains(HashSet<RegistrableDomain>&& domains, CompletionHandler<void()>&& completionHandler)
+{
+    ASSERT(RunLoop::isMain());
+    WTFLogAlways("!!!!!!!!!!!! started!!");
+
+    if (isEphemeral() || domains.isEmpty()) {
+        completionHandler();
+        return;
+    }
+    WTFLogAlways("!!!!!!!!!!!! start333333ed!!");
+
+    auto domainsCopy = crossThreadCopy(domains);
+
+    if (m_networkSession) {
+        WTFLogAlways("!!!!!!!!!!!! start4444ed!!");
+
+        if (auto* storageSession = m_networkSession->networkStorageSession()) {
+            storageSession->setManagedDomains(WTFMove(domains));
+            storageSession->setThirdPartyCookieBlockingMode(ThirdPartyCookieBlockingMode::AllExceptBetweenAppBoundDomains);
+            WTFLogAlways("!!!!!!!!!!!! netwo555rk");
+        }
+    }
+
+    postTask([this, domains = WTFMove(domainsCopy), completionHandler = WTFMove(completionHandler)]() mutable {
+        if (m_statisticsStore) {
+            m_statisticsStore->setManagedDomains(WTFMove(domains));
+            m_statisticsStore->setThirdPartyCookieBlockingMode(ThirdPartyCookieBlockingMode::AllExceptManagedDomains);
+                        WTFLogAlways("!!!!!!!!!!!! netwo7   rk222");
+
+            WTFLogAlways("!!!!!!!!!!!! starte666d!!");
+
+        }
+        postTaskReply(WTFMove(completionHandler));
+    });
+}
+
 void WebResourceLoadStatisticsStore::didCreateNetworkProcess()
 {
     ASSERT(RunLoop::isMain());

@@ -226,6 +226,7 @@ void WebsiteDataStore::platformInitialize()
 #if ENABLE(APP_BOUND_DOMAINS)
     initializeAppBoundDomains();
 #endif
+    initializeManagedDomains();
 }
 
 void WebsiteDataStore::platformDestroy()
@@ -618,6 +619,9 @@ static HashSet<WebCore::RegistrableDomain>& managedDomains()
     return managedDomains;
 }
 
+NSString *kManagedSitesIdentifier = @"com.apple.mail-shared";
+NSString *kCrossSiteTrackingAllowedDomainsKey = @"crossSiteTrackingAllowedDomains";
+
 void WebsiteDataStore::initializeManagedDomains(ForceReinitialization forceReinitialization)
 {
     ASSERT(RunLoop::isMain());
@@ -626,22 +630,30 @@ void WebsiteDataStore::initializeManagedDomains(ForceReinitialization forceReini
         return;
     
     static const auto maxManagedDomainCount = 10;
+    LOG_ERROR("1111!!!!!!");
+
     
     managedDomainQueue().dispatch([forceReinitialization] () mutable {
+        LOG_ERROR("1111!!!!!!");
         if (hasInitializedManagedDomains && forceReinitialization != ForceReinitialization::Yes)
             return;
+        LOG_ERROR("222!!!!!!");
+        NSDictionary *managedSitesPrefs = [NSDictionary dictionaryWithContentsOfFile:[[NSString stringWithFormat:@"/Library/Managed Preferences/%@/%@.plist", NSUserName(), kManagedSitesIdentifier] stringByStandardizingPath]];
+        NSArray<NSString *> *crossSiteTrackingAllowed = [managedSitesPrefs objectForKey:kCrossSiteTrackingAllowedDomainsKey];
+
+        managedKeyExists = crossSiteTrackingAllowed ? true : false;
         
-        NSArray<NSString *> *appBoundData = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"WKAppBoundDomains"];
-        managedKeyExists = appBoundData ? true : false;
-        
-        RunLoop::main().dispatch([forceReinitialization, appBoundData = retainPtr(appBoundData)] {
+        RunLoop::main().dispatch([forceReinitialization, crossSiteTrackingAllowed = retainPtr(crossSiteTrackingAllowed)] {
+            LOG_ERROR("333!!!!!!");
             if (hasInitializedManagedDomains && forceReinitialization != ForceReinitialization::Yes)
                 return;
+            LOG_ERROR("4444!!!!!!");
 
             if (forceReinitialization == ForceReinitialization::Yes)
                 managedDomains().clear();
 
-            for (NSString *data in appBoundData.get()) {
+            for (NSString *data in crossSiteTrackingAllowed.get()) {
+                LOG_ERROR("we dun got a domain!!!!!!");
                 if (managedDomains().size() >= maxManagedDomainCount)
                     break;
 
@@ -650,10 +662,10 @@ void WebsiteDataStore::initializeManagedDomains(ForceReinitialization forceReini
                     url.setProtocol("https"_s);
                 if (!url.isValid())
                     continue;
-                WebCore::RegistrableDomain appBoundDomain { url };
-                if (appBoundDomain.isEmpty())
+                WebCore::RegistrableDomain managedDomain { url };
+                if (managedDomain.isEmpty())
                     continue;
-                managedDomains().add(appBoundDomain);
+                managedDomains().add(managedDomain);
             }
             hasInitializedManagedDomains = true;
             if (isManagedITPRelaxationEnabled)

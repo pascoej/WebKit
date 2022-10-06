@@ -2022,18 +2022,21 @@ void WebsiteDataStore::setAppBoundDomainsForITP(const HashSet<WebCore::Registrab
 
 void WebsiteDataStore::forwardManagedDomainsToITPIfInitialized(CompletionHandler<void()>&& completionHandler)
 {
+    LOG_ERROR("pleaaase!!!!");
     auto callbackAggregator = CallbackAggregator::create(WTFMove(completionHandler));
     auto managedDomains = managedDomainsIfInitialized();
     if (!managedDomains)
         return;
+    LOG_ERROR("ok!!!!");
 
     auto propagateManagedDomains = [callbackAggregator] (WebsiteDataStore* store, const HashSet<WebCore::RegistrableDomain>& domains) {
+        LOG_ERROR("nah pleaaase!!!!");
         if (!store)
             return;
 
         if (store->thirdPartyCookieBlockingMode() != WebCore::ThirdPartyCookieBlockingMode::AllExceptManagedDomains)
             store->setThirdPartyCookieBlockingMode(WebCore::ThirdPartyCookieBlockingMode::AllExceptManagedDomains, [callbackAggregator] { });
-
+        LOG_ERROR("yasss!!!!");
         store->setManagedDomainsForITP(domains, [callbackAggregator] { });
     };
 

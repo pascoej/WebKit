@@ -229,6 +229,8 @@ public:
     WEBCORE_EXPORT void resetAppBoundDomains();
 #endif
 
+    WEBCORE_EXPORT void setManagedDomains(HashSet<RegistrableDomain>&&);
+    WEBCORE_EXPORT void resetManagedDomains();
 private:
 #if PLATFORM(COCOA)
     enum IncludeHTTPOnlyOrNot { DoNotIncludeHTTPOnly, IncludeHTTPOnly };
