@@ -220,6 +220,12 @@ std::pair<String, WebCore::SecureCookiesAccessed> WebCookieJar::cookieRequestHea
     if (shouldBlockCookies(webFrame, firstParty, url, applyTrackingPreventionInNetworkProcess))
         return { };
 #endif
+    if (firstParty.isNull()) {
+        WTFLogAlways("WEB if (firstParty.isNull()) { START");
+        WTFReportBacktrace();
+        WTFLogAlways("WEB if (firstParty.isNull()) { END");
+        SLEEP_THREAD_FOR_DEBUGGER();
+    }
 
     auto sendResult = WebProcess::singleton().ensureNetworkProcessConnection().connection().sendSync(Messages::NetworkConnectionToWebProcess::CookieRequestHeaderFieldValue(firstParty, sameSiteInfo, url, frameID, pageID, includeSecureCookies, applyTrackingPreventionInNetworkProcess, shouldRelaxThirdPartyCookieBlocking(webFrame)), 0);
     if (!sendResult)

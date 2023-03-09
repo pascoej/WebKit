@@ -209,6 +209,7 @@ void ImageLoader::updateFromElement(RelevantMutation relevantMutation)
             m_pendingURL = attr;
         }
         ResourceRequest resourceRequest(imageURL);
+        //resourceRequest.setFirstPartyForCookies(document.firstPartyForCookies());
         resourceRequest.setInspectorInitiatorNodeIdentifier(InspectorInstrumentation::identifierForNode(m_element));
 
         auto request = createPotentialAccessControlRequest(WTFMove(resourceRequest), WTFMove(options), document, crossOriginAttribute);

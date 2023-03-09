@@ -418,11 +418,22 @@ bool NetworkProcess::allowsFirstPartyForCookies(WebCore::ProcessIdentifier proce
 {
     // FIXME: This should probably not be necessary. If about:blank is the first party for cookies,
     // we should set it to be the inherited origin then remove this exception.
-    if (firstParty.isAboutBlank())
-        return true;
+    if (firstParty.isAboutBlank()) {
+        WTFLogAlways("if (firstParty.isAboutBlank()) { START");
+        WTFReportBacktrace();
+        WTFLogAlways("if (firstParty.isAboutBlank()) { END");
 
-    if (firstParty.isNull())
+        SLEEP_THREAD_FOR_DEBUGGER();
+        return true;
+    }
+
+    if (firstParty.isNull()) {
+        WTFLogAlways("if (firstParty.isNull()) { START");
+        WTFReportBacktrace();
+        WTFLogAlways("if (firstParty.isNull()) { END");
+        SLEEP_THREAD_FOR_DEBUGGER();
         return true; // FIXME: This shouldn't be allowed.
+    }
 
     RegistrableDomain firstPartyDomain(firstParty);
     return allowsFirstPartyForCookies(processIdentifier, firstPartyDomain);

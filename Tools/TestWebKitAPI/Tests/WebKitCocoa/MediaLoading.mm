@@ -244,6 +244,18 @@ TEST(MediaLoading, LockdownModeHLS)
     EXPECT_WK_STREQ([webView _test_waitForAlert], "playing");
 }
 
+TEST(MediaLoading, ImageLoadWithVaryCookies)
+{
+    
+    HTTPServer server({
+        { "/testimage.jpg"_s, { { { "Content-Type"_s, "image/html"_s }, { "Vary"_s, "cookie"_s } }, "bar"_s } },
+    }, HTTPServer::Protocol::Https);
+
+    auto webView = adoptNS([TestWKWebView new]);
+    [webView synchronouslyLoadRequest:server.request("/testimage.jpg"_s)];
+    
+}
+
 } // namespace TestWebKitAPI
 
 #endif // ENABLE(VIDEO) && USE(AVFOUNDATION)
