@@ -664,6 +664,12 @@ void Page::progressFinished(LocalFrame& frameWithCompletedProgress) const
     }
 }
 
+void Page::setMainFrame(Ref<Frame>&& frame)
+{
+    m_mainFrame = WTFMove(frame);
+}
+
+
 bool Page::openedByDOM() const
 {
     return m_openedByDOM;

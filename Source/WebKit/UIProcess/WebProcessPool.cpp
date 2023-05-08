@@ -76,6 +76,7 @@
 #include "WebKit2Initialize.h"
 #include "WebMemorySampler.h"
 #include "WebNotificationManagerProxy.h"
+#include "WebPageCreationParameters.h"
 #include "WebPageGroup.h"
 #include "WebPageProxy.h"
 #include "WebPreferences.h"
@@ -1167,6 +1168,8 @@ Ref<WebPageProxy> WebProcessPool::createWebPage(PageClient& pageClient, Ref<API:
     if (wasProcessSwappingOnNavigationEnabled != m_configuration->processSwapsOnNavigation())
         m_webProcessCache->updateCapacity(*this);
 
+    if (auto processSwapOnCrossSiteWindowOpenEnabled = page->preferences().processSwapOnCrossSiteWindowOpenEnabled())
+        m_configuration->setProcessSwapsOnWindowOpenWithOpener(processSwapOnCrossSiteWindowOpenEnabled);
 #if ENABLE(GPU_PROCESS)
     if (auto* gpuProcess = GPUProcessProxy::singletonIfCreated()) {
         gpuProcess->updatePreferences(*process);
@@ -1842,9 +1845,9 @@ void WebProcessPool::processForNavigation(WebPageProxy& page, WebFrameProxy& fra
 {
     auto registrableDomain = RegistrableDomain { navigation.currentRequest().url() };
     RegistrableDomain mainFrameDomain(URL(page.pageLoadState().activeURL()));
-    if (!frame.isMainFrame() && page.preferences().siteIsolationEnabled()) {
+    if ((!frame.isMainFrame() && page.preferences().siteIsolationEnabled()) || (frame.isMainFrame() && configuration().processSwapsOnWindowOpenWithOpener())) {
         if (!registrableDomain.isEmpty()) {
-            if (registrableDomain == mainFrameDomain) {
+            if (!frame.isMainFrame() && registrableDomain == mainFrameDomain) {
                 completionHandler(Ref { page.mainFrame()->process() }, nullptr, "Found process for the same registration domain as mainFrame domain"_s, DidCreateNewProcess::No);
                 return;
             }

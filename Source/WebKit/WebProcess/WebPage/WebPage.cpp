@@ -631,7 +631,7 @@ WebPage::WebPage(PageIdentifier pageID, WebPageCreationParameters&& parameters)
     m_pageGroup = WebProcess::singleton().webPageGroup(parameters.pageGroupData);
 
     std::optional<ProcessIdentifier> remoteProcessIdentifier;
-    if (parameters.subframeProcessFrameTreeCreationParameters)
+    if (parameters.subframeProcessFrameTreeCreationParameters && !parameters.openerFrameIdentifier)
         remoteProcessIdentifier = parameters.subframeProcessFrameTreeCreationParameters->remoteProcessIdentifier;
 
     PageConfiguration pageConfiguration(
@@ -784,10 +784,16 @@ WebPage::WebPage(PageIdentifier pageID, WebPageCreationParameters&& parameters)
     // in modern WebKit.
     m_page->settings().setBackForwardCacheExpirationInterval(Seconds::infinity());
 
-    m_mainFrame->initWithCoreMainFrame(*this, m_page->mainFrame(), receivedMainFrameIdentifierFromUIProcess);
+    m_mainFrame->initWithCoreMainFrame(*this, m_page->mainFrame(), receivedMainFrameIdentifierFromUIProcess && !parameters.openerFrameIdentifier);
     if (auto& subframeProcessFrameTreeCreationParameters = parameters.subframeProcessFrameTreeCreationParameters) {
         for (auto& childParameters : subframeProcessFrameTreeCreationParameters->children)
             constructFrameTree(m_mainFrame.get(), childParameters);
+    }
+
+    if (parameters.isProcessSwap && parameters.openerFrameIdentifier) {
+        if (auto* openerFrame = WebProcess::singleton().webFrame(*parameters.openerFrameIdentifier))
+            if (auto* coreMainFrame = m_mainFrame->coreLocalFrame())
+                coreMainFrame->loader().setOpener(openerFrame->coreRemoteFrame());
     }
 
     m_drawingArea->updatePreferences(parameters.store);
@@ -1060,7 +1066,7 @@ void WebPage::continueWillSubmitForm(WebCore::FrameIdentifier frameID, WebKit::F
     frame->continueWillSubmitForm(formListenerID);
 }
 
-void WebPage::didCommitLoadInAnotherProcess(WebCore::FrameIdentifier frameID, WebCore::LayerHostingContextIdentifier layerHostingContextIdentifier, WebCore::ProcessIdentifier remoteProcessIdentifier)
+void WebPage::didCommitLoadInAnotherProcess(WebCore::FrameIdentifier frameID, std::optional<WebCore::LayerHostingContextIdentifier> layerHostingContextIdentifier, WebCore::ProcessIdentifier remoteProcessIdentifier)
 {
     auto* frame = WebProcess::singleton().webFrame(frameID);
     if (!frame) {
@@ -1849,6 +1855,17 @@ void WebPage::transitionFrameToLocalAndLoadRequest(LocalFrameCreationParameters&
     frame->transitionToLocal(creationParameters.layerHostingContextIdentifier);
 
     loadRequest(WTFMove(loadParameters));
+}
+
+void WebPage::transitionFrameToLocal(LocalFrameCreationParameters&& creationParameters, FrameIdentifier frameIdentifier)
+{
+    RefPtr frame = WebProcess::singleton().webFrame(frameIdentifier);
+    if (!frame) {
+        ASSERT_NOT_REACHED();
+        return;
+    }
+
+    frame->transitionToLocal(creationParameters.layerHostingContextIdentifier);
 }
 
 void WebPage::loadRequest(LoadParameters&& loadParameters)

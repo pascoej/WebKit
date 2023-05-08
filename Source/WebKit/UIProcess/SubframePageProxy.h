@@ -67,6 +67,7 @@ public:
     ~SubframePageProxy();
 
     WebProcessProxy& process() { return m_process.get(); }
+    WebCore::PageIdentifier pageID() { return m_webPageID; }
 
 private:
     SubframePageProxy(WebPageProxy&, WebProcessProxy&, const WebCore::RegistrableDomain&);

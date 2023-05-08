@@ -603,7 +603,7 @@ public:
     void getFrameInfo(WebCore::FrameIdentifier, CompletionHandler<void(FrameInfoData&&)>&&);
     void getFrameTree(CompletionHandler<void(FrameTreeNodeData&&)>&&);
     void continueWillSubmitForm(WebCore::FrameIdentifier, WebKit::FormSubmitListenerIdentifier);
-    void didCommitLoadInAnotherProcess(WebCore::FrameIdentifier, WebCore::LayerHostingContextIdentifier, WebCore::ProcessIdentifier remoteProcessIdentifier);
+    void didCommitLoadInAnotherProcess(WebCore::FrameIdentifier, std::optional<WebCore::LayerHostingContextIdentifier>, WebCore::ProcessIdentifier remoteProcessIdentifier);
     void didFinishLoadInAnotherProcess(WebCore::FrameIdentifier);
 
     std::optional<WebCore::SimpleRange> currentSelectionAsRange();
@@ -1766,6 +1766,7 @@ private:
     void tryClose(CompletionHandler<void(bool)>&&);
     void platformDidReceiveLoadParameters(const LoadParameters&);
     void transitionFrameToLocalAndLoadRequest(LocalFrameCreationParameters&&, LoadParameters&&);
+    void transitionFrameToLocal(LocalFrameCreationParameters&&, WebCore::FrameIdentifier);
     void loadRequest(LoadParameters&&);
     [[noreturn]] void loadRequestWaitingForProcessLaunch(LoadParameters&&, URL&&, WebPageProxyIdentifier, bool);
     void loadData(LoadParameters&&);
