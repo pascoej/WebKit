@@ -714,11 +714,16 @@ void WebFrameLoaderClient::dispatchDidFinishDocumentLoad()
 
     RefPtr<API::Object> userData;
 
-    auto navigationID = static_cast<WebDocumentLoader&>(*m_frame->coreFrame()->loader().documentLoader()).navigationID();
+    auto& documentLoader = static_cast<WebDocumentLoader&>(*m_frame->coreFrame()->loader().documentLoader());
+
+
+    auto navigationID = documentLoader.navigationID();
 
     // Notify the bundle client.
     webPage->injectedBundleLoaderClient().didFinishDocumentLoadForFrame(*webPage, m_frame, userData);
 
+    WTFLogAlways("P(%d) dispatchDidFinishDocumentLoad page: %d frame: (%d,%d) url:%s", (int)Process::identifier().toUInt64(),
+                 (int)webPage->identifier().toUInt64(), (int)m_frame->frameID().processIdentifier().toUInt64(), (int)m_frame->frameID().object().toUInt64(), documentLoader.url().string().utf8().data());
     // Notify the UIProcess.
     webPage->send(Messages::WebPageProxy::DidFinishDocumentLoadForFrame(m_frame->frameID(), navigationID, UserData(WebProcess::singleton().transformObjectsToHandles(userData.get()).get())));
 

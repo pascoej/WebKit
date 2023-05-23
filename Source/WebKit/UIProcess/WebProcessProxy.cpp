@@ -1010,17 +1010,27 @@ bool WebProcessProxy::shouldAllowNonValidInjectedCode() const
 
 void WebProcessProxy::didReceiveMessage(IPC::Connection& connection, IPC::Decoder& decoder)
 {
+    WTFLogAlways("WebProcessProxy::didReceiveMessage %p %s", this, description(decoder.messageName()));
+    if (String::fromUTF8(description(decoder.messageName())) == "WebPageProxy_DidFinishDocumentLoadForFrame"_s) {
+        WTFLogAlways("WebProcessProxy::didReceiveMessage( 111 %p", this);
+    }
     if (dispatchMessage(connection, decoder))
         return;
-
+    if (String::fromUTF8(description(decoder.messageName())) == "WebPageProxy_DidFinishDocumentLoadForFrame"_s) {
+        WTFLogAlways("WebProcessProxy::didReceiveMessage( 222 %p", this);
+    }
     if (m_processPool->dispatchMessage(connection, decoder))
         return;
-
+    if (String::fromUTF8(description(decoder.messageName())) == "WebPageProxy_DidFinishDocumentLoadForFrame"_s) {
+        WTFLogAlways("WebProcessProxy::didReceiveMessage( 333 %p", this);
+    }
     if (decoder.messageReceiverName() == Messages::WebProcessProxy::messageReceiverName()) {
         didReceiveWebProcessProxyMessage(connection, decoder);
         return;
     }
-
+    if (String::fromUTF8(description(decoder.messageName())) == "WebPageProxy_DidFinishDocumentLoadForFrame"_s) {
+        WTFLogAlways("WebProcessProxy::didReceiveMessage( 444 %p", this);
+    }
     // FIXME: Add unhandled message logging.
 }
 
@@ -1053,7 +1063,7 @@ void WebProcessProxy::didClose(IPC::Connection& connection)
 void WebProcessProxy::processDidTerminateOrFailedToLaunch(ProcessTerminationReason reason)
 {
     WEBPROCESSPROXY_RELEASE_LOG_ERROR(Process, "processDidTerminateOrFailedToLaunch: reason=%" PUBLIC_LOG_STRING, processTerminationReasonToString(reason));
-
+    WTFLogAlways("processDidTerminateOrFailedToLaunch: %d %s ",(int)coreProcessIdentifier().toUInt64(), processTerminationReasonToString(reason));
     // Protect ourselves, as the call to shutDown() below may otherwise cause us
     // to be deleted before we can finish our work.
     Ref protectedThis { *this };
@@ -1123,7 +1133,9 @@ void WebProcessProxy::didReceiveInvalidMessage(IPC::Connection& connection, IPC:
     logInvalidMessage(connection, messageName);
 
     WebProcessPool::didReceiveInvalidMessage(messageName);
-
+    WTFLogAlways("GOT INVALID MESSAGE %s", description(messageName));
+    WTFReportBacktraceWithPrefix("ebProcessProxy::didReceiveInvalidMessage");
+/*
 #if ENABLE(IPC_TESTING_API)
     if (connection.ignoreInvalidMessageForTesting())
         return;
@@ -1134,7 +1146,7 @@ void WebProcessProxy::didReceiveInvalidMessage(IPC::Connection& connection, IPC:
 
     // Since we've invalidated the connection we'll never get a IPC::Connection::Client::didClose
     // callback so we'll explicitly call it here instead.
-    didClose(connection);
+    didClose(connection);*/
 }
 
 void WebProcessProxy::didBecomeUnresponsive()

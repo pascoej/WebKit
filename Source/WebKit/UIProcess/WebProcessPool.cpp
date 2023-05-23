@@ -1046,6 +1046,8 @@ void WebProcessPool::disconnectProcess(WebProcessProxy& process)
 
 Ref<WebProcessProxy> WebProcessPool::processForRegistrableDomain(WebsiteDataStore& websiteDataStore, const RegistrableDomain& registrableDomain, WebProcessProxy::LockdownMode lockdownMode)
 {
+    WTFLogAlways("WebProcessPool::processForRegistrableDomain %s", registrableDomain.string().utf8().data());
+    WTFReportBacktraceWithPrefix("WebProcessPool::processForRegistrableD");
     if (!registrableDomain.isEmpty()) {
         if (auto process = webProcessCache().takeProcess(registrableDomain, websiteDataStore, lockdownMode)) {
             WEBPROCESSPOOL_RELEASE_LOG(ProcessSwapping, "processForRegistrableDomain: Using WebProcess from WebProcess cache (process=%p, PID=%i)", process.get(), process->processIdentifier());
@@ -1843,16 +1845,24 @@ void WebProcessPool::processForNavigation(WebPageProxy& page, WebFrameProxy& fra
 {
     auto registrableDomain = RegistrableDomain { navigation.currentRequest().url() };
     RegistrableDomain mainFrameDomain(URL(page.pageLoadState().activeURL()));
-    if (!frame.isMainFrame() && page.preferences().siteIsolationEnabled()) {
+    if ((!frame.isMainFrame() && page.preferences().siteIsolationEnabled()) || (frame.isMainFrame() && configuration().processSwapsOnWindowOpenWithOpener())) {
+        WTFLogAlways(" WebProcessPool::processForNavigation should be lookin' for tha thing for url %s for webpageproxy: %d", registrableDomain.string().utf8().data(), (int) page.identifier().toUInt64());
         if (!registrableDomain.isEmpty()) {
-            if (registrableDomain == mainFrameDomain) {
+            if (!frame.isMainFrame() && registrableDomain == mainFrameDomain) {
+                WTFLogAlways("this for some resaon");
+
                 completionHandler(Ref { page.mainFrame()->process() }, nullptr, "Found process for the same registration domain as mainFrame domain"_s, DidCreateNewProcess::No);
                 return;
             }
             if (auto* subframePageProxy = page.subpageFrameProxyForRegistrableDomain(registrableDomain)) {
+                WTFLogAlways("USING THA SUBFRAMEPROXF PROCESS which is core: %d", (int)subframePageProxy->process().coreProcessIdentifier().toUInt64());
                 completionHandler(Ref { subframePageProxy->process() }, nullptr, "Found process for the same registration domain"_s, DidCreateNewProcess::No);
                 return;
+            } else {
+                WTFLogAlways("could not find");
             }
+        } else {
+            WTFLogAlways("something else entirely");
         }
     }
 
@@ -2001,6 +2011,7 @@ std::tuple<Ref<WebProcessProxy>, SuspendedPageProxy*, ASCIILiteral> WebProcessPo
 
         if (auto* process = m_swappedProcessesPerRegistrableDomain.get(targetRegistrableDomain)) {
             if (process->websiteDataStore() == dataStore.ptr()) {
+                WTFLogAlways("REUSING THA STORE");
                 LOG(ProcessSwapping, "(ProcessSwapping) Reusing a previously cached process with pid %i to continue navigation to URL %s", process->processIdentifier(), targetURL.string().utf8().data());
 
                 return { *process, nullptr, reason };

@@ -889,12 +889,14 @@ static void hardwareKeyboardAvailabilityChangedCallback(CFNotificationCenterRef,
     THROW_IF_SUSPENDED;
     if (self._safeBrowsingWarning)
         return [self reload];
+    WTFLogAlways("!!!!! %p %p goBack", self, _page.get());
     return wrapper(_page->goBack());
 }
 
 - (WKNavigation *)goForward
 {
     THROW_IF_SUSPENDED;
+    WTFLogAlways("!!!!! %p %p goForward", self, _page.get());
     return wrapper(_page->goForward());
 }
 

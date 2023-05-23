@@ -1021,6 +1021,8 @@ WebPage::WebPage(PageIdentifier pageID, WebPageCreationParameters&& parameters)
     setLookalikeCharacterStrings(WTFMove(parameters.lookalikeCharacterStrings));
     setAllowedLookalikeCharacterStrings(WTFMove(parameters.allowedLookalikeCharacterStrings));
 #endif
+
+    WTFLogAlways("Process(%d) creating page(%d) with mainframe(%d,%d)", (int)Process::identifier().toUInt64(), (int)m_identifier.toUInt64(), (int)m_mainFrame->frameID().processIdentifier().toUInt64(), (int)m_mainFrame->frameID().object().toUInt64());
 }
 
 void WebPage::constructFrameTree(WebFrame& parent, const FrameTreeCreationParameters& treeCreationParameters)
@@ -1072,6 +1074,9 @@ void WebPage::didCommitLoadInAnotherProcess(WebCore::FrameIdentifier frameID, st
         ASSERT_NOT_REACHED();
         return;
     }
+    WTFLogAlways("Process(%d) page(%d) mainframe(%d,%d) WebPage::didCommitLoadInAnotherProces frameID: (%d,%d) remoteProcessIdentifier(%d)", (int)Process::identifier().toUInt64(), (int)m_identifier.toUInt64(), (int)m_mainFrame->frameID().processIdentifier().toUInt64(), (int)m_mainFrame->frameID().object().toUInt64(),
+                 (int)frameID.processIdentifier().toUInt64(), (int)frameID.object().toUInt64(), (int)remoteProcessIdentifier.toUInt64());
+
     frame->didCommitLoadInAnotherProcess(layerHostingContextIdentifier, remoteProcessIdentifier);
 }
 
@@ -1790,7 +1795,7 @@ void WebPage::suspendForProcessSwap()
     auto failedToSuspend = [this, protectedThis = Ref { *this }] {
         send(Messages::WebPageProxy::DidFailToSuspendAfterProcessSwap());
     };
-
+    WTFLogAlways("looking at to* currentHistoryItem = m_mainFrame->coreFrame()->loader().history().curr");
     auto* currentHistoryItem = m_mainFrame->coreFrame()->loader().history().currentItem();
     if (!currentHistoryItem) {
         failedToSuspend();
@@ -1855,6 +1860,17 @@ void WebPage::transitionFrameToLocalAndLoadRequest(LocalFrameCreationParameters&
     frame->transitionToLocal(creationParameters.layerHostingContextIdentifier);
 
     loadRequest(WTFMove(loadParameters));
+}
+
+void WebPage::transitionFrameToLocal(LocalFrameCreationParameters&& creationParameters, FrameIdentifier frameIdentifier)
+{
+    RefPtr frame = WebProcess::singleton().webFrame(frameIdentifier);
+    if (!frame) {
+        ASSERT_NOT_REACHED();
+        return;
+    }
+
+    frame->transitionToLocal(creationParameters.layerHostingContextIdentifier);
 }
 
 void WebPage::loadRequest(LoadParameters&& loadParameters)
@@ -2063,6 +2079,11 @@ void WebPage::goToBackForwardItem(uint64_t navigationID, const BackForwardItemId
 {
     WEBPAGE_RELEASE_LOG(Loading, "goToBackForwardItem: navigationID=%" PRIu64 ", backForwardItemID=%s, shouldTreatAsContinuingLoad=%u, lastNavigationWasAppInitiated=%d, existingNetworkResourceLoadIdentifierToResume=%" PRIu64, navigationID, backForwardItemID.toString().utf8().data(), static_cast<unsigned>(shouldTreatAsContinuingLoad), lastNavigationWasAppInitiated, valueOrDefault(existingNetworkResourceLoadIdentifierToResume).toUInt64());
     SendStopResponsivenessTimer stopper;
+    WTFLogAlways("WebPage::goToBackForwardItem( 1 continunig: %d page: %d", (int)shouldTreatAsContinuingLoad, (int)identifier().toUInt64());
+    if ((int)shouldTreatAsContinuingLoad == 0) {
+        WTFReportBacktraceWithPrefix("go backforward");
+    }
+    WTFLogAlways("WebPage::goToBackForwardItem( 1 continunig: %d", (int)shouldTreatAsContinuingLoad);
 
     m_lastNavigationWasAppInitiated = lastNavigationWasAppInitiated;
     if (auto* localMainFrame = dynamicDowncast<LocalFrame>(corePage()->mainFrame())) {
@@ -2092,6 +2113,7 @@ void WebPage::goToBackForwardItem(uint64_t navigationID, const BackForwardItemId
     ASSERT(!m_pendingNavigationID);
     m_pendingNavigationID = navigationID;
     m_pendingWebsitePolicies = WTFMove(websitePolicies);
+    WTFLogAlways("WebPage::goToBackForwardItem( 2");
 
     m_page->goToItem(*item, backForwardType, shouldTreatAsContinuingLoad);
 }

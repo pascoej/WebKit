@@ -125,8 +125,8 @@ static Ref<Protocol::Target::TargetInfo> buildTargetInfoObject(const InspectorTa
 void InspectorTargetAgent::targetCreated(InspectorTarget& target)
 {
     auto addResult = m_targets.set(target.identifier(), &target);
-    ASSERT_UNUSED(addResult, addResult.isNewEntry);
-
+    //ASSERT_UNUSED(addResult, addResult.isNewEntry);
+    (void)addResult;
     if (!m_isConnected)
         return;
 

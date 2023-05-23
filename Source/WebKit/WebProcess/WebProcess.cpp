@@ -953,7 +953,7 @@ void WebProcess::didReceiveMessage(IPC::Connection& connection, IPC::Decoder& de
         return;
     }
 
-    LOG_ERROR("Unhandled web process message '%s' (destination: %" PRIu64 " pid: %d)", description(decoder.messageName()), decoder.destinationID(), static_cast<int>(getCurrentProcessID()));
+    LOG_ERROR("Unhandled web process message '%s' (destination: %" PRIu64 " pid: %d coreProcess: %d)", description(decoder.messageName()), decoder.destinationID(), static_cast<int>(getCurrentProcessID()), (int)Process::identifier().toUInt64());
 }
 
 void WebProcess::didClose(IPC::Connection& connection)

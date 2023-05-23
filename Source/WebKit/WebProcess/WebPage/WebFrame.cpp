@@ -163,6 +163,9 @@ WebFrame::WebFrame(WebPage& page, WebCore::FrameIdentifier frameID)
 #ifndef NDEBUG
     webFrameCounter.increment();
 #endif
+    if (WebProcess::singleton().webFrame(m_frameID)) {
+        WTFLogAlways("in process %d failing SSERT(!WebProcess::singleton().webFrame(m_frameID=(%d,%d)));", (int)Process::identifier().toUInt64(), (int)m_frameID.processIdentifier().toUInt64(),(int)m_frameID.object().toUInt64());
+    }
     ASSERT(!WebProcess::singleton().webFrame(m_frameID));
     WebProcess::singleton().addWebFrame(m_frameID, this);
 }
@@ -402,22 +405,20 @@ void WebFrame::transitionToLocal(WebCore::LayerHostingContextIdentifier layerHos
     }
 
     auto* parent = remoteFrame->tree().parent();
-    if (!parent) {
-        ASSERT_NOT_REACHED();
-        return;
-    }
 
-    parent->tree().removeChild(*remoteFrame);
+    if (parent)
+        parent->tree().removeChild(*remoteFrame);
     remoteFrame->disconnectOwnerElement();
     auto invalidator = static_cast<WebRemoteFrameClient&>(remoteFrame->client()).takeFrameInvalidator();
-
-    auto localFrame = LocalFrame::createSubframeHostedInAnotherProcess(*corePage, makeUniqueRef<WebFrameLoaderClient>(*this, WTFMove(invalidator)), m_frameID, *parent);
+    Ref<LocalFrame> localFrame = parent ? LocalFrame::createSubframeHostedInAnotherProcess(*corePage, makeUniqueRef<WebFrameLoaderClient>(*this, WTFMove(invalidator)), m_frameID, *parent) : LocalFrame::createMainFrame(*corePage, makeUniqueRef<WebFrameLoaderClient>(*this, WTFMove(invalidator)), m_frameID);
     m_coreFrame = localFrame.ptr();
     localFrame->init();
+    //localFrame->loader().initForSynthesizedDocument({ });
 
-    setLayerHostingContextIdentifier(layerHostingContextIdentifier);
+    //setLayerHostingContextIdentifier(layerHostingContextIdentifier);
     if (localFrame->isRootFrame())
         corePage->addRootFrame(localFrame.get());
+    corePage->setMainFrame(WTFMove(localFrame));
 
     if (auto* webPage = page(); webPage && m_coreFrame->isRootFrame()) {
         if (auto* drawingArea = webPage->drawingArea())

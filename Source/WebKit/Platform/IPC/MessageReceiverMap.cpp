@@ -29,6 +29,8 @@
 #include "Decoder.h"
 #include "MessageReceiver.h"
 
+#include <wtf/DebugUtilities.h>
+
 namespace IPC {
 
 MessageReceiverMap::MessageReceiverMap()
@@ -120,15 +122,20 @@ bool MessageReceiverMap::dispatchMessage(Connection& connection, Decoder& decode
 {
     if (auto messageReceiver = m_globalMessageReceivers.get(decoder.messageReceiverName())) {
         ASSERT(!decoder.destinationID());
+        WTFLogAlways("FOUND VALUE FOR %s dest: %d", description(decoder.messageName()), (int)decoder.destinationID());
 
         messageReceiver->didReceiveMessage(connection, decoder);
         return true;
     }
 
     if (auto messageReceiver = m_messageReceivers.get(std::make_pair(decoder.messageReceiverName(), decoder.destinationID()))) {
+        WTFLogAlways("FOUND WITH DEST VALUE FOR %s dest: %d %p", description(decoder.messageName()), (int)decoder.destinationID(), messageReceiver.get());
+        if (String::fromUTF8(description(decoder.messageName())) == "WebPageProxy_DidFinishDocumentLoadForFrame"_s) {
+        }
         messageReceiver->didReceiveMessage(connection, decoder);
         return true;
     }
+    WTFLogAlways("COULD NOT FIND VALUE FOR %s dest: %d", description(decoder.messageName()), (int)decoder.destinationID());
 
     return false;
 }

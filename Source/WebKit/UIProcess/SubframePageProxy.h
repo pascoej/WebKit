@@ -63,9 +63,11 @@ class SubframePageProxy : public IPC::MessageReceiver, public IPC::MessageSender
     WTF_MAKE_FAST_ALLOCATED;
 public:
     SubframePageProxy(WebPageProxy&, WebProcessProxy&, bool isInSameProcessAsMainFrame, bool isOpener);
+    SubframePageProxy(WebPageProxy&, WebProcessProxy&, WebCore::FrameIdentifier);
     ~SubframePageProxy();
 
     WebProcessProxy& process() { return m_process.get(); }
+    WebCore::PageIdentifier pageID() { return m_webPageID; }
 
 private:
     IPC::Connection* messageSenderConnection() const final;

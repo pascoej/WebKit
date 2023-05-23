@@ -59,6 +59,16 @@ SubframePageProxy::SubframePageProxy(WebPageProxy& page, WebProcessProxy& proces
     }
 }
 
+SubframePageProxy::SubframePageProxy(WebPageProxy& page, WebProcessProxy& process, FrameIdentifier frameID)
+    : m_webPageID(page.webPageID())
+    , m_process(process)
+    , m_page(page)
+    , m_isInSameProcessAsMainFrame(true)
+{
+    page.send(Messages::WebPage::DidCommitLoadInAnotherProcess(frameID, std::nullopt, process.coreProcessIdentifier()));
+}
+
+
 SubframePageProxy::~SubframePageProxy()
 {
     if (!m_isInSameProcessAsMainFrame)

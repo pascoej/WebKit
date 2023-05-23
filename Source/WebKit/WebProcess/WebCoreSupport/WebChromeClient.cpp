@@ -348,7 +348,7 @@ Page* WebChromeClient::createWindow(LocalFrame& frame, const WindowFeatures& win
     };
 
     WebFrame* webFrame = WebFrame::fromCoreFrame(frame);
-
+    WTFReportBacktraceWithPrefix("create new page webp");
     auto sendResult = webProcess.parentProcessConnection()->sendSync(Messages::WebPageProxy::CreateNewPage(webFrame->info(), webFrame->page()->webPageProxyIdentifier(), navigationAction.resourceRequest(), windowFeatures, navigationActionData), m_page.identifier(), IPC::Timeout::infinity(), { IPC::SendSyncOption::MaintainOrderingWithAsyncMessages, IPC::SendSyncOption::InformPlatformProcessWillSuspend });
     if (!sendResult)
         return nullptr;

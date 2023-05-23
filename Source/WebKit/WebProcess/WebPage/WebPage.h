@@ -1764,6 +1764,7 @@ private:
     void tryClose(CompletionHandler<void(bool)>&&);
     void platformDidReceiveLoadParameters(const LoadParameters&);
     void transitionFrameToLocalAndLoadRequest(LocalFrameCreationParameters&&, LoadParameters&&);
+    void transitionFrameToLocal(LocalFrameCreationParameters&&, WebCore::FrameIdentifier);
     void loadRequest(LoadParameters&&);
     [[noreturn]] void loadRequestWaitingForProcessLaunch(LoadParameters&&, URL&&, WebPageProxyIdentifier, bool);
     void loadData(LoadParameters&&);

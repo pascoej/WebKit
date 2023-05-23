@@ -5395,6 +5395,7 @@ void Document::dispatchWindowEvent(Event& event, EventTarget* target)
 
 void Document::dispatchWindowLoadEvent()
 {
+    WTFLogAlways("P(%d) Document::dispatchWindowLoadEvent() url: %s", (int)Process::identifier().toUInt64(), url().string().utf8().data());
     ASSERT_WITH_SECURITY_IMPLICATION(ScriptDisallowedScope::InMainThread::isScriptAllowed());
     if (!m_domWindow)
         return;

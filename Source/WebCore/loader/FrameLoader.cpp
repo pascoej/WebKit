@@ -1570,6 +1570,7 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, Navig
     if (m_documentLoader)
         loader->setOverrideEncoding(m_documentLoader->overrideEncoding());
 
+    WTFLogAlways(" FrameLoader::loadWithNavigationAction(cons");
     loadWithDocumentLoader(loader.ptr(), type, WTFMove(formState), allowNavigationToInvalidURL, WTFMove(completionHandler));
 }
 
@@ -1630,9 +1631,10 @@ void FrameLoader::loadWithDocumentLoader(DocumentLoader* loader, FrameLoadType t
     // to parser requiring a FrameView.  We should fix this dependency.
 
     ASSERT(m_frame.view());
-
+    WTFLogAlways(" FrameLoader::loadWithDocumentLoader( 1");
     if (!isNavigationAllowed())
         return;
+    WTFLogAlways(" FrameLoader::loadWithDocumentLoader( 2");
 
     if (m_frame.document())
         m_previousURL = m_frame.document()->url();
@@ -1648,6 +1650,7 @@ void FrameLoader::loadWithDocumentLoader(DocumentLoader* loader, FrameLoadType t
     if (m_frame.isMainFrame()) {
         if (auto* page = m_frame.page()) {
             FRAMELOADER_RELEASE_LOG(ResourceLoading, "loadWithDocumentLoader: main frame load started");
+            WTFLogAlways(" FrameLoader::loadWithDocumentLoader( 2 main frame");
             page->mainFrameLoadStarted(newURL, type);
             page->performanceLogging().didReachPointOfInterest(PerformanceLogging::MainFrameLoadStarted);
         }
@@ -1673,6 +1676,7 @@ void FrameLoader::loadWithDocumentLoader(DocumentLoader* loader, FrameLoadType t
         policyChecker().checkNavigationPolicy(ResourceRequest(loader->request()), ResourceResponse { }  /* redirectResponse */, oldDocumentLoader.get(), WTFMove(formState), [this, protectedFrame = Ref { m_frame }, requesterOrigin = WTFMove(requesterOrigin)] (const ResourceRequest& request, WeakPtr<FormState>&&, NavigationPolicyDecision navigationPolicyDecision) {
             continueFragmentScrollAfterNavigationPolicy(request, requesterOrigin.get(), navigationPolicyDecision == NavigationPolicyDecision::ContinueLoad);
         }, PolicyDecisionMode::Synchronous);
+        WTFLogAlways(" FrameLoader::loadWithDocumentLoader( fragment nav");
         return;
     }
 
@@ -1688,9 +1692,11 @@ void FrameLoader::loadWithDocumentLoader(DocumentLoader* loader, FrameLoadType t
 
     if (shouldTreatCurrentLoadAsContinuingLoad()) {
         continueLoadAfterNavigationPolicy(loader->request(), formState.get(), NavigationPolicyDecision::ContinueLoad, allowNavigationToInvalidURL);
+        WTFLogAlways(" FrameLoader::loadWithDocumentLoader( continunig load");
         return;
     }
 
+    WTFLogAlways("p=%d FrameLoader::loadWithDocumentLoader( checking nav", (int)Process::identifier().toUInt64());
     RELEASE_ASSERT(!isBackForwardLoadType(policyChecker().loadType()) || history().provisionalItem());
     policyChecker().checkNavigationPolicy(ResourceRequest(loader->request()), ResourceResponse { } /* redirectResponse */, loader, WTFMove(formState), [this, protectedFrame = Ref { m_frame }, allowNavigationToInvalidURL, completionHandler = completionHandlerCaller.release()] (const ResourceRequest& request, WeakPtr<FormState>&& formState, NavigationPolicyDecision navigationPolicyDecision) mutable {
         continueLoadAfterNavigationPolicy(request, formState.get(), navigationPolicyDecision, allowNavigationToInvalidURL);
@@ -3665,6 +3671,7 @@ void FrameLoader::continueLoadAfterNavigationPolicy(const ResourceRequest& reque
     bool canContinue = navigationPolicyDecision == NavigationPolicyDecision::ContinueLoad && shouldClose() && !urlIsDisallowed;
 
     if (!canContinue) {
+        WTFLogAlways(" FrameLoader::continueLoadAfterNavigationPol cannot continue");
         FRAMELOADER_RELEASE_LOG(ResourceLoading, "continueLoadAfterNavigationPolicy: can't continue loading frame due to the following reasons ("
             "allowNavigationToInvalidURL = %d, "
             "requestURLIsValid = %d, "
@@ -3727,6 +3734,7 @@ void FrameLoader::continueLoadAfterNavigationPolicy(const ResourceRequest& reque
     // <rdar://problem/6250856> - In certain circumstances on pages with multiple frames, stopAllLoaders()
     // might detach the current FrameLoader, in which case we should bail on this newly defunct load. 
     if (!m_frame.page()) {
+        WTFLogAlways(" FrameLoader::continueLoadAfterNavigationPol no page");
         FRAMELOADER_RELEASE_LOG(ResourceLoading, "continueLoadAfterNavigationPolicy: can't continue loading frame because it became defunct");
         return;
     }
@@ -3739,17 +3747,20 @@ void FrameLoader::continueLoadAfterNavigationPolicy(const ResourceRequest& reque
     setPolicyDocumentLoader(nullptr);
 
     if (isBackForwardLoadType(type)) {
+        WTFLogAlways(" FrameLoader::continueLoadAfterNavigationPol is bcak forward");
         auto& diagnosticLoggingClient = m_frame.page()->diagnosticLoggingClient();
         if (history().provisionalItem() && history().provisionalItem()->isInBackForwardCache()) {
             diagnosticLoggingClient.logDiagnosticMessageWithResult(DiagnosticLoggingKeys::backForwardCacheKey(), DiagnosticLoggingKeys::retrievalKey(), DiagnosticLoggingResultPass, ShouldSample::Yes);
             loadProvisionalItemFromCachedPage();
             FRAMELOADER_RELEASE_LOG(ResourceLoading, "continueLoadAfterNavigationPolicy: can't continue loading frame because it will be loaded from cache");
+            WTFLogAlways(" FrameLoader::continueLoadAfterNavigationPol ntinueLoadAfterNavigationPolicy: can't continue loading frame because it will be loaded from cache");
             return;
         }
         diagnosticLoggingClient.logDiagnosticMessageWithResult(DiagnosticLoggingKeys::backForwardCacheKey(), DiagnosticLoggingKeys::retrievalKey(), DiagnosticLoggingResultFail, ShouldSample::Yes);
     }
 
     CompletionHandler<void()> completionHandler = [this, protectedFrame = Ref { m_frame }] () mutable {
+        WTFLogAlways(" FrameLoader::continueLoadAfterNavigationPol ch1");
         if (!m_provisionalDocumentLoader) {
             FRAMELOADER_RELEASE_LOG(ResourceLoading, "continueLoadAfterNavigationPolicy (completionHandler): Frame load canceled - no provisional document loader before prepareForLoadStart");
             return;
@@ -3761,25 +3772,28 @@ void FrameLoader::continueLoadAfterNavigationPolicy(const ResourceRequest& reque
         // so we need to null check it again.
         if (!m_provisionalDocumentLoader) {
             FRAMELOADER_RELEASE_LOG(ResourceLoading, "continueLoadAfterNavigationPolicy (completionHandler): Frame load canceled - no provisional document loader after prepareForLoadStart");
+            WTFLogAlways(" FrameLoader::continueLoadAfterNavigationPol no provis");
             return;
         }
         
         DocumentLoader* activeDocLoader = activeDocumentLoader();
         if (activeDocLoader && activeDocLoader->isLoadingMainResource()) {
             FRAMELOADER_RELEASE_LOG(ResourceLoading, "continueLoadAfterNavigationPolicy (completionHandler): Main frame already being loaded");
+                WTFLogAlways(" FrameLoader::continueLoadAfterNavigationPol already loading");
             return;
         }
         
         m_loadingFromCachedPage = false;
-
+        WTFLogAlways("visionalDocumentLoader->startLoadingMainResource(");
         m_provisionalDocumentLoader->startLoadingMainResource();
     };
     
     if (!formState) {
+        WTFLogAlways(" FrameLoader::continueLoadAfterNavigationPol cno form state");
         completionHandler();
         return;
     }
-
+                     WTFLogAlways(" FrameLoader::continueLoadAfterNavigationPol submit form");
     m_client->dispatchWillSubmitForm(*formState, WTFMove(completionHandler));
 }
 
@@ -4025,6 +4039,7 @@ void FrameLoader::loadDifferentDocumentItem(HistoryItem& item, HistoryItem* from
 
         documentLoader->setLastCheckedRequest(ResourceRequest());
         loadWithDocumentLoader(documentLoader, loadType, { }, AllowNavigationToInvalidURL::Yes);
+        WTFLogAlways("cached page");
         return;
     }
 
@@ -4048,6 +4063,7 @@ void FrameLoader::loadDifferentDocumentItem(HistoryItem& item, HistoryItem* from
         if (auto* documentLoader = localFrame->loader().documentLoader())
             request.setIsAppInitiated(documentLoader->lastNavigationWasAppInitiated());
     }
+    WTFLogAlways("trying");
 
     // If this was a repost that failed the page cache, we might try to repost the form.
     NavigationAction action;
@@ -4112,6 +4128,7 @@ void FrameLoader::loadDifferentDocumentItem(HistoryItem& item, HistoryItem* from
 
     action.setTargetBackForwardItem(item);
     action.setSourceBackForwardItem(fromItem);
+    WTFLogAlways("oadWithNavigationAction(request, WTFMove");
 
     loadWithNavigationAction(request, WTFMove(action), loadType, { }, AllowNavigationToInvalidURL::Yes, shouldTreatAsContinuingLoad);
 }
@@ -4129,8 +4146,14 @@ void FrameLoader::loadItem(HistoryItem& item, HistoryItem* fromItem, FrameLoadTy
     if (sameDocumentNavigation) {
         m_loadType = loadType;
         loadSameDocumentItem(item);
-    } else
+        WTFLogAlways("f (sameDocumentNavigation) {");
+    } else {
+        WTFLogAlways("P(%d) FrameLoader::loadItem( START DIFF ", (int)Process::identifier().toUInt64());
+       // WTFReportBacktrace();
         loadDifferentDocumentItem(item, fromItem, loadType, MayAttemptCacheOnlyLoadForFormSubmissionItem, shouldTreatAsContinuingLoad);
+        WTFLogAlways("P(%d) FrameLoader::loadItem( END DIFF ", (int)Process::identifier().toUInt64());
+
+    }
 }
 
 void FrameLoader::retryAfterFailedCacheOnlyMainResourceLoad()

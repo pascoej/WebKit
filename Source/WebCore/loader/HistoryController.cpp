@@ -298,7 +298,7 @@ bool FrameLoader::HistoryController::shouldStopLoadingForHistoryItem(HistoryItem
 void FrameLoader::HistoryController::goToItem(HistoryItem& targetItem, FrameLoadType type, ShouldTreatAsContinuingLoad shouldTreatAsContinuingLoad)
 {
     LOG(History, "HistoryController %p goToItem %p type=%d", this, &targetItem, static_cast<int>(type));
-
+    WTFLogAlways("1 FrameLoader::HistoryController::goToI");
     ASSERT(!m_frame.tree().parent());
     
     // shouldGoToHistoryItem is a private delegate method. This is needed to fix:
@@ -308,13 +308,19 @@ void FrameLoader::HistoryController::goToItem(HistoryItem& targetItem, FrameLoad
     Page* page = m_frame.page();
     if (!page)
         return;
+    WTFLogAlways("2 FrameLoader::HistoryController::goToI");
+
     if (!m_frame.loader().client().shouldGoToHistoryItem(targetItem))
         return;
+    WTFLogAlways("3 FrameLoader::HistoryController::goToI");
+
     if (m_defersLoading) {
         m_deferredItem = &targetItem;
         m_deferredFrameLoadType = type;
         return;
     }
+    WTFLogAlways("4 FrameLoader::HistoryController::goToI");
+
 
     // Set the BF cursor before commit, which lets the user quickly click back/forward again.
     // - plus, it only makes sense for the top level of the operation through the frame tree,
@@ -774,6 +780,7 @@ void FrameLoader::HistoryController::recursiveGoToItem(HistoryItem& item, Histor
 {
     if (!itemsAreClones(item, fromItem)) {
         m_frame.loader().loadItem(item, fromItem, type, shouldTreatAsContinuingLoad);
+        WTFLogAlways("f (!itemsAreClones(item, fr");
         return;
     }
 
@@ -785,8 +792,10 @@ void FrameLoader::HistoryController::recursiveGoToItem(HistoryItem& item, Histor
         if (!fromChildItem)
             continue;
 
-        if (auto* childFrame = dynamicDowncast<LocalFrame>(m_frame.tree().child(childFrameName)))
+        if (auto* childFrame = dynamicDowncast<LocalFrame>(m_frame.tree().child(childFrameName))) {
             childFrame->loader().history().recursiveGoToItem(childItem, fromChildItem, type, shouldTreatAsContinuingLoad);
+            WTFLogAlways("ldFrame->loader().history().recursiveGoToItem(childI");
+        }
     }
 }
 

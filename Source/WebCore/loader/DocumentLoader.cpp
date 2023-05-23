@@ -2076,9 +2076,10 @@ void DocumentLoader::startLoadingMainResource()
     m_loadingMainResource = true;
 
     Ref<DocumentLoader> protectedThis(*this);
-
+    WTFLogAlways("id DocumentLoader::startLoadingMainResourc");
     if (maybeLoadEmpty()) {
         DOCUMENTLOADER_RELEASE_LOG("startLoadingMainResource: Returning empty document");
+        WTFLogAlways("id DocumentLoader::startLoadingMainResourc emtpy");
         return;
     }
 
@@ -2108,6 +2109,7 @@ void DocumentLoader::startLoadingMainResource()
         // willSendRequest() may lead to our Frame being detached or cancelling the load via nulling the ResourceRequest.
         if (!m_frame || m_request.isNull()) {
             DOCUMENTLOADER_RELEASE_LOG("startLoadingMainResource: Load canceled after willSendRequest");
+            WTFLogAlways("id DocumentLoader::startLoadingMainResourc cancell");
             return;
         }
 
@@ -2122,10 +2124,12 @@ void DocumentLoader::startLoadingMainResource()
             matchRegistration(url, [request = WTFMove(request), protectedThis = WTFMove(protectedThis), this] (auto&& registrationData) mutable {
                 if (!m_mainDocumentError.isNull()) {
                     DOCUMENTLOADER_RELEASE_LOG("startLoadingMainResource callback: Load canceled because of main document error (type=%d, code=%d)", static_cast<int>(m_mainDocumentError.type()), m_mainDocumentError.errorCode());
+                    WTFLogAlways("id DocumentLoader::startLoadingMainResourc errorr");
                     return;
                 }
                 if (!m_frame) {
                     DOCUMENTLOADER_RELEASE_LOG("startLoadingMainResource callback: Load canceled because no frame");
+                    WTFLogAlways("id DocumentLoader::startLoadingMainResourc no frame");
                     return;
                 }
 
@@ -2134,11 +2138,13 @@ void DocumentLoader::startLoadingMainResource()
                 // Prefer existing substitute data (from WKWebView.loadData etc) over service worker fetch.
                 if (this->tryLoadingSubstituteData()) {
                     DOCUMENTLOADER_RELEASE_LOG("startLoadingMainResource callback: Load canceled because of substitute data");
+                    WTFLogAlways("id DocumentLoader::startLoadingMainResourc subb");
                     return;
                 }
 
                 if (!m_serviceWorkerRegistrationData && this->tryLoadingRequestFromApplicationCache()) {
                     DOCUMENTLOADER_RELEASE_LOG("startLoadingMainResource callback: Loaded from Application Cache");
+                    WTFLogAlways("id DocumentLoader::startLoadingMainResourc cache");
                     return;
                 }
                 this->loadMainResource(WTFMove(request));
@@ -2147,6 +2153,7 @@ void DocumentLoader::startLoadingMainResource()
         }
 #else
         if (tryLoadingRequestFromApplicationCache()) {
+            WTFLogAlways("id DocumentLoader::startLoadingMainResourc cache");
             DOCUMENTLOADER_RELEASE_LOG("startLoadingMainResource: Loaded from Application Cache");
             return;
         }
@@ -2168,6 +2175,7 @@ void DocumentLoader::unregisterReservedServiceWorkerClient()
 
 void DocumentLoader::loadMainResource(ResourceRequest&& request)
 {
+    WTFLogAlways(" DocumentLoader::loadMainResource(Resou");
     ResourceLoaderOptions mainResourceLoadOptions(
         SendCallbackPolicy::SendCallbacks,
         ContentSniffingPolicy::SniffContent,
@@ -2220,10 +2228,12 @@ void DocumentLoader::loadMainResource(ResourceRequest&& request)
         // This is because we may have fired the load event in a parent frame.
         if (!m_frame) {
             DOCUMENTLOADER_RELEASE_LOG("loadMainResource: Unable to load main resource, frame has gone away");
+            WTFLogAlways(" DocumentLoader::loadMainResource(Resou no frame");
             return;
         }
 
         if (!m_request.url().isValid()) {
+            WTFLogAlways(" DocumentLoader::loadMainResource(Resou bad url");
             DOCUMENTLOADER_RELEASE_LOG("loadMainResource: Unable to load main resource, URL is invalid");
             cancelMainResourceLoad(frameLoader()->client().cannotShowURLError(m_request));
             return;
@@ -2237,6 +2247,7 @@ void DocumentLoader::loadMainResource(ResourceRequest&& request)
         // a new ApplicationCacheHost.
         m_applicationCacheHost = makeUnique<ApplicationCacheHost>(*this);
         maybeLoadEmpty();
+        WTFLogAlways(" DocumentLoader::loadMainResource(Resou empty dog");
         return;
     }
 
@@ -2246,6 +2257,7 @@ void DocumentLoader::loadMainResource(ResourceRequest&& request)
     if (m_mainResource->errorOccurred() && m_frame->page() && m_mainResource->resourceError().domain() == ContentExtensions::WebKitContentBlockerDomain) {
         DOCUMENTLOADER_RELEASE_LOG("loadMainResource: Blocked by content blocker error");
         cancelMainResourceLoad(frameLoader()->blockedByContentBlockerError(m_request));
+        WTFLogAlways(" DocumentLoader::loadMainResource(Resou content blocker");
         return;
     }
 #endif
@@ -2254,6 +2266,7 @@ void DocumentLoader::loadMainResource(ResourceRequest&& request)
         m_identifierForLoadWithoutResourceLoader = ResourceLoaderIdentifier::generate();
         frameLoader()->notifier().assignIdentifierToInitialRequest(m_identifierForLoadWithoutResourceLoader, this, mainResourceRequest.resourceRequest());
         frameLoader()->notifier().dispatchWillSendRequest(this, m_identifierForLoadWithoutResourceLoader, mainResourceRequest.resourceRequest(), ResourceResponse(), nullptr);
+        WTFLogAlways(" DocumentLoader::loadMainResource(Resou no resource");
     }
 
     becomeMainResourceClient();
@@ -2265,6 +2278,7 @@ void DocumentLoader::loadMainResource(ResourceRequest&& request)
     if (equalIgnoringFragmentIdentifier(m_request.url(), updatedRequest.url()))
         updatedRequest.setURL(m_request.url());
     setRequest(updatedRequest);
+    WTFLogAlways(" DocumentLoader::loadMainResource(Resou set request");
 }
 
 void DocumentLoader::cancelPolicyCheckIfNeeded()

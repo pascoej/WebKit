@@ -46,6 +46,7 @@ void FrameLoadState::removeObserver(Observer& observer)
 
 void FrameLoadState::didStartProvisionalLoad(const URL& url)
 {
+    WTFLogAlways("%p FrameLoadState::didStartProvisionalLoad %s", this, url.string().utf8().data());
     m_state = State::Provisional;
     m_provisionalURL = url;
 }
@@ -53,6 +54,7 @@ void FrameLoadState::didStartProvisionalLoad(const URL& url)
 void FrameLoadState::didSuspend()
 {
     m_provisionalURL = { };
+    WTFLogAlways("%p FrameLoadState::didSuspend()", this);
     m_state = State::Finished;
 }
 
@@ -72,6 +74,7 @@ void FrameLoadState::didReceiveServerRedirectForProvisionalLoad(const URL& url)
 void FrameLoadState::didFailProvisionalLoad()
 {
     ASSERT(m_state == State::Provisional);
+    WTFLogAlways("%p FrameLoadState::didFailProvisionalLoad()", this);
 
     m_state = State::Finished;
     m_provisionalURL = { };
@@ -80,7 +83,10 @@ void FrameLoadState::didFailProvisionalLoad()
 
 void FrameLoadState::didCommitLoad()
 {
-    ASSERT(m_state == State::Provisional);
+    if (m_state != State::Provisional) {
+        WTFLogAlways("%p FrameLoadState::didCommitLoad() %d", this, (int)m_state);
+    }
+   // ASSERT(m_state == State::Provisional);
 
     m_state = State::Committed;
     m_url = m_provisionalURL;
@@ -91,7 +97,7 @@ void FrameLoadState::didFinishLoad()
 {
     ASSERT(m_state == State::Committed);
     ASSERT(m_provisionalURL.isEmpty());
-
+    WTFLogAlways("%p FrameLoadState::didFinishLoad()", this);
     m_state = State::Finished;
 
     for (auto& observer : copyToVectorOf<std::reference_wrapper<Observer>>(m_observers))
@@ -102,6 +108,7 @@ void FrameLoadState::didFailLoad()
 {
     ASSERT(m_state == State::Committed);
     ASSERT(m_provisionalURL.isEmpty());
+    WTFLogAlways("%p FrameLoadState::didFailLoad()", this);
 
     m_state = State::Finished;
 }

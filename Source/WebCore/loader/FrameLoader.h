@@ -104,7 +104,7 @@ public:
     ~FrameLoader();
 
     WEBCORE_EXPORT void init();
-    void initForSynthesizedDocument(const URL&);
+    WEBCORE_EXPORT void initForSynthesizedDocument(const URL&);
 
     LocalFrame& frame() const { return m_frame; }
 

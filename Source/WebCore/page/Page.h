@@ -322,6 +322,7 @@ public:
 
     Frame& mainFrame() { return m_mainFrame.get(); }
     const Frame& mainFrame() const { return m_mainFrame.get(); }
+    WEBCORE_EXPORT void setMainFrame(Ref<Frame>&&);
 
     bool openedByDOM() const;
     WEBCORE_EXPORT void setOpenedByDOM();

@@ -664,6 +664,12 @@ void Page::progressFinished(LocalFrame& frameWithCompletedProgress) const
     }
 }
 
+void Page::setMainFrame(Ref<Frame>&& frame)
+{
+    m_mainFrame = WTFMove(frame);
+}
+
+
 bool Page::openedByDOM() const
 {
     return m_openedByDOM;
@@ -679,17 +685,21 @@ void Page::goToItem(HistoryItem& item, FrameLoadType type, ShouldTreatAsContinui
     // stopAllLoaders may end up running onload handlers, which could cause further history traversals that may lead to the passed in HistoryItem
     // being deref()-ed. Make sure we can still use it with HistoryController::goToItem later.
     Ref<HistoryItem> protector(item);
+    WTFLogAlways("Page::goToItem(History 1 item: %s", item.url().string().utf8().data());
 
     auto* localMainFrame = dynamicDowncast<LocalFrame>(m_mainFrame.get());
     if (!localMainFrame)
         return;
+    WTFLogAlways("Page::goToItem(History 2");
 
     auto& frameLoader = localMainFrame->loader();
     if (frameLoader.history().shouldStopLoadingForHistoryItem(item)) {
-        if (auto* localMainFrame = dynamicDowncast<LocalFrame>(m_mainFrame.get()))
+        if (auto* localMainFrame = dynamicDowncast<LocalFrame>(m_mainFrame.get())) {
+            WTFLogAlways("Page::goToItem(History STOP");
             localMainFrame->loader().stopAllLoadersAndCheckCompleteness();
+        }
     }
-
+    WTFLogAlways("localMainFrame->loader().history().goToItem(");
     localMainFrame->loader().history().goToItem(item, type, shouldTreatAsContinuingLoad);
 }
 

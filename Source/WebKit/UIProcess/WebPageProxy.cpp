@@ -745,12 +745,14 @@ WebPageProxy::~WebPageProxy()
 
 void WebPageProxy::addAllMessageReceivers()
 {
+    WTFLogAlways("ADDING ALL REC FOR %d for process: %d", (int)internals().webPageID.toUInt64(), (int)m_process->coreProcessIdentifier().toUInt64());
     m_process->addMessageReceiver(Messages::WebPageProxy::messageReceiverName(), internals().webPageID, *this);
     m_process->addMessageReceiver(Messages::NotificationManagerMessageHandler::messageReceiverName(), internals().webPageID, internals().notificationManagerMessageHandler);
 }
 
 void WebPageProxy::removeAllMessageReceivers()
 {
+    WTFLogAlways("REMOVING ALL REC FOR %d for process: %d", (int)internals().webPageID.toUInt64(), (int)m_process->coreProcessIdentifier().toUInt64());
     m_process->removeMessageReceiver(Messages::WebPageProxy::messageReceiverName(), internals().webPageID);
     m_process->removeMessageReceiver(Messages::NotificationManagerMessageHandler::messageReceiverName(), internals().webPageID);
 }
@@ -1032,6 +1034,11 @@ bool WebPageProxy::suspendCurrentPageIfPossible(API::Navigation& navigation, Ref
     if (!mainFrame)
         return false;
 
+    if (openerFrame()) {
+        WTFLogAlways("WebPageProxy::suspendCurrentPageIfPos not suspending cause opener");
+        return false;
+    }
+
     if (!hasCommittedAnyProvisionalLoads()) {
         WEBPAGEPROXY_RELEASE_LOG(ProcessSwapping, "suspendCurrentPageIfPossible: Not suspending current page for process pid %i because has not committed any load yet", m_process->processIdentifier());
         return false;
@@ -1169,8 +1176,8 @@ void WebPageProxy::finishAttachingToWebProcess(ProcessLaunchReason reason)
 
     pageClient().didRelaunchProcess();
     internals().pageLoadState.didSwapWebProcesses();
-    if (reason != ProcessLaunchReason::InitialProcess)
-        m_drawingArea->waitForBackingStoreUpdateOnNextPaint();
+    //if (reason != ProcessLaunchReason::InitialProcess)
+     //   m_drawingArea->waitForBackingStoreUpdateOnNextPaint();
 }
 
 void WebPageProxy::didAttachToRunningProcess()
@@ -1559,6 +1566,7 @@ WebProcessProxy& WebPageProxy::ensureRunningProcess()
 
 RefPtr<API::Navigation> WebPageProxy::loadRequest(ResourceRequest&& request, ShouldOpenExternalURLsPolicy shouldOpenExternalURLsPolicy, API::Object* userData)
 {
+    WTFLogAlways("WebPageProxy::loadRequest(Resou url: %s", request.url().string().utf8().data());
     if (m_isClosed)
         return nullptr;
 
@@ -1983,11 +1991,15 @@ void WebPageProxy::recordNavigationSnapshot(WebBackForwardListItem& item)
 
 RefPtr<API::Navigation> WebPageProxy::goForward()
 {
+    WTFLogAlways("WebPageProxy::goForward");
     WEBPAGEPROXY_RELEASE_LOG(Loading, "goForward:");
     auto* forwardItem = m_backForwardList->goForwardItemSkippingItemsWithoutUserGesture();
-    if (!forwardItem)
+    if (!forwardItem) {
+        WTFLogAlways("no item");
         return nullptr;
+    }
 
+    WTFLogAlways("got item: %s", forwardItem->url().utf8().data());
     return goToBackForwardItem(*forwardItem, FrameLoadType::Forward);
 }
 
@@ -2015,17 +2027,21 @@ RefPtr<API::Navigation> WebPageProxy::goToBackForwardItem(WebBackForwardListItem
         WEBPAGEPROXY_RELEASE_LOG(Loading, "goToBackForwardItem: page is closed");
         return nullptr;
     }
-
+    WTFLogAlways("WebPageProxy::goToBackForwardItem");
     if (!hasRunningProcess()) {
+        WTFLogAlways("WebPageProxy::goToBackForwardItem no running process");
         launchProcess(RegistrableDomain { URL { item.url() } }, ProcessLaunchReason::InitialProcess);
 
         if (&item != m_backForwardList->currentItem())
             m_backForwardList->goToItem(item);
-    }
+    } else
+        WTFLogAlways("WebPageProxy::goToBackForwardItem has running process");
 
     RefPtr<API::Navigation> navigation;
-    if (!m_backForwardList->currentItem()->itemIsInSameDocument(item))
+    if (!m_backForwardList->currentItem()->itemIsInSameDocument(item)) {
+        WTFLogAlways("WebPageProxy::goToBackForwardItem not same doc");
         navigation = m_navigationState->createBackForwardNavigation(item, m_backForwardList->currentItem(), frameLoadType);
+    }
 
     auto transaction = internals().pageLoadState.transaction();
     internals().pageLoadState.setPendingAPIRequest(transaction, { navigation ? navigation->navigationID() : 0, item.url() });
@@ -2036,7 +2052,8 @@ RefPtr<API::Navigation> WebPageProxy::goToBackForwardItem(WebBackForwardListItem
 #if ENABLE(PUBLIC_SUFFIX_LIST)
     topPrivatelyControlledDomain = WebCore::topPrivatelyControlledDomain(URL(item.url()).host().toString());
 #endif
-    
+    WTFLogAlways("WebPageProxy::goToBackForwardItem sending GoToBackForwardItem");
+
     send(Messages::WebPage::GoToBackForwardItem(navigation ? navigation->navigationID() : 0, item.itemID(), frameLoadType, ShouldTreatAsContinuingLoad::No, std::nullopt, m_lastNavigationWasAppInitiated, std::nullopt, topPrivatelyControlledDomain));
     m_process->startResponsivenessTimer();
 
@@ -2057,6 +2074,7 @@ void WebPageProxy::tryRestoreScrollPosition()
 
 void WebPageProxy::didChangeBackForwardList(WebBackForwardListItem* added, Vector<Ref<WebBackForwardListItem>>&& removed)
 {
+    WTFLogAlways("WebPageProxy::didChangeBackForw");
     PageClientProtector protector(pageClient());
 
     if (!m_navigationClient->didChangeBackForwardList(*this, added, removed) && m_loaderClient)
@@ -4020,8 +4038,8 @@ void WebPageProxy::commitProvisionalPage(FrameIdentifier frameID, FrameInfoData&
 {
     ASSERT(m_provisionalPage);
     WEBPAGEPROXY_RELEASE_LOG(Loading, "commitProvisionalPage: newPID=%i", m_provisionalPage->process().processIdentifier());
-
     RefPtr<WebFrameProxy> mainFrameInPreviousProcess = m_mainFrame;
+    WTFLogAlways("in WebPageProxy::commitProvisionalPage oldPageID: %d newPageID: %d", (int)internals().webPageID.toUInt64(), (int)m_provisionalPage->webPageID().toUInt64());
 
     ASSERT(m_process.ptr() != &m_provisionalPage->process());
 
@@ -4041,6 +4059,7 @@ void WebPageProxy::commitProvisionalPage(FrameIdentifier frameID, FrameInfoData&
     removeAllMessageReceivers();
     auto* navigation = navigationState().navigation(m_provisionalPage->navigationID());
     bool didSuspendPreviousPage = navigation && !m_provisionalPage->isProcessSwappingOnNavigationResponse() ? suspendCurrentPageIfPossible(*navigation, WTFMove(mainFrameInPreviousProcess), m_provisionalPage->processSwapRequestedByClient(), shouldDelayClosingUntilFirstLayerFlush) : false;
+    WTFLogAlways("DID SUSPEND: %d", (int)didSuspendPreviousPage);
     m_process->removeWebPage(*this, m_websiteDataStore.ptr() == m_provisionalPage->process().websiteDataStore() ? WebProcessProxy::EndsUsingDataStore::No : WebProcessProxy::EndsUsingDataStore::Yes);
 
     // There is no way we'll be able to return to the page in the previous page so close it.
@@ -4048,6 +4067,7 @@ void WebPageProxy::commitProvisionalPage(FrameIdentifier frameID, FrameInfoData&
         send(Messages::WebPage::Close());
 
     const auto oldWebPageID = internals().webPageID;
+    WTFLogAlways(" WebPageProxy::commitProvisionalPage page(%d) from %d to %d", (int)oldWebPageID.toUInt64(), (int)m_process->coreProcessIdentifier().toUInt64(), (int)m_provisionalPage->process().coreProcessIdentifier().toUInt64());
     swapToProvisionalPage(std::exchange(m_provisionalPage, nullptr));
 
     didCommitLoadForFrame(frameID, WTFMove(frameInfo), WTFMove(request), navigationID, mimeType, frameHasCustomContentProvider, frameLoadType, certificateInfo, usedLegacyTLS, privateRelayed, containsPluginDocument, hasInsecureContent, mouseEventPolicy, userData);
@@ -4120,6 +4140,7 @@ void WebPageProxy::continueNavigationInNewProcess(API::Navigation& navigation, W
         if (m_backForwardList->currentItem() && (navigation->lockBackForwardList() == LockBackForwardList::Yes || navigation->lockHistory() == LockHistory::Yes)) {
             // If WebCore is supposed to lock the history for this load, then the new process needs to know about the current history item so it can update
             // it instead of creating a new one.
+            // this part seems relevant
             m_provisionalPage->send(Messages::WebPage::SetCurrentHistoryItemForReattach(m_backForwardList->currentItem()->itemState()));
         }
 
@@ -5588,6 +5609,8 @@ void WebPageProxy::didCommitLoadForFrame(FrameIdentifier frameID, FrameInfoData&
 {
     LOG(Loading, "(Loading) WebPageProxy %" PRIu64 " didCommitLoadForFrame in navigation %" PRIu64, internals().identifier.toUInt64(), navigationID);
     LOG(BackForward, "(Back/Forward) After load commit, back/forward list is now:%s", m_backForwardList->loggingString());
+    //WTFLogAlways("(Back/Forward) After load commit, back/forward list is now:%s", m_backForwardList->loggingString());
+    WTFLogAlways("wpp: %d (Back/Forward) after load comit for nav, back/forward list is now:%s",(int)identifier().toUInt64(), m_backForwardList->loggingString());
 
     PageClientProtector protector(pageClient());
 
@@ -6125,11 +6148,11 @@ void WebPageProxy::decidePolicyForNavigationActionAsyncShared(Ref<WebProcessProx
 {
     RefPtr frame = WebFrameProxy::webFrame(frameID);
     MESSAGE_CHECK(process, frame);
-
+// tell this to do the continue thing
     auto sender = PolicyDecisionSender::create(identifier, [webPageID, frameID, listenerID, process, url = request.url()] (const auto& policyDecision) {
         if (policyDecision.policyAction == PolicyAction::Use && url.isLocalFile())
             process->addPreviouslyApprovedFileURL(url);
-
+        //WTFLogAlways("22  WebPageProxy::decidePolicyForNavigationActionAsyncShared( process->send(Messages::WebPage::DidReceivePolicyDeci process: %d m_process: %d", (int)process->coreProcessIdentifier().toUInt64(), (int)m_process->coreProcessIdentifier().toUInt64());
         process->send(Messages::WebPage::DidReceivePolicyDecision(frameID, listenerID, policyDecision
 #if !ENABLE(CONTENT_FILTERING_IN_NETWORKING_PROCESS)
             , createNetworkExtensionsSandboxExtensions(process)
@@ -6190,6 +6213,8 @@ void WebPageProxy::decidePolicyForNavigationAction(Ref<WebProcessProxy>&& proces
         navigationActionData.canHandleRequest = canHandleRequest;
         frameInfo.securityOrigin = navigation->destinationFrameSecurityOrigin();
     }
+
+    WTFLogAlways("wpp: %d (Back/Forward) in decidepolicy for nav, back/forward list is now:%s",(int)identifier().toUInt64(), m_backForwardList->loggingString());
 
     if (!navigation) {
         if (auto targetBackForwardItemIdentifier = navigationActionData.targetBackForwardItemIdentifier) {
@@ -6483,6 +6508,7 @@ void WebPageProxy::decidePolicyForNewWindowAction(FrameIdentifier frameID, Frame
         ASSERT_UNUSED(safeBrowsingWarning, !safeBrowsingWarning);
 
         auto sender = PolicyDecisionSender::create(identifier, [this, protectedThis = WTFMove(protectedThis), frameID, listenerID] (const auto& policyDecision) {
+            WTFLogAlways("  WebPageProxy::decidePolicyForNewWindowAction( process->send(Messages::WebPage::DidReceivePolicyDeci");
             send(Messages::WebPage::DidReceivePolicyDecision(frameID, listenerID, policyDecision
 #if !ENABLE(CONTENT_FILTERING_IN_NETWORKING_PROCESS)
                 , createNetworkExtensionsSandboxExtensions(m_process)
@@ -6509,6 +6535,7 @@ void WebPageProxy::decidePolicyForResponse(IPC::Connection& connection, FrameIde
 
 void WebPageProxy::decidePolicyForResponseShared(Ref<WebProcessProxy>&& process, PageIdentifier webPageID, FrameIdentifier frameID, FrameInfoData&& frameInfo, PolicyCheckIdentifier identifier, uint64_t navigationID, const ResourceResponse& response, const ResourceRequest& request, bool canShowMIMEType, const String& downloadAttribute, uint64_t listenerID)
 {
+    WTFLogAlways(" WebPageProxy::decidePolicyForResponseS");
     PageClientProtector protector(pageClient());
 
     internals().decidePolicyForResponseRequest = request;
@@ -6526,6 +6553,7 @@ void WebPageProxy::decidePolicyForResponseShared(Ref<WebProcessProxy>&& process,
         ASSERT_UNUSED(safeBrowsingWarning, !safeBrowsingWarning);
 
         auto sender = PolicyDecisionSender::create(identifier, [webPageID, frameID, listenerID, process] (const auto& policyDecision) {
+            WTFLogAlways("WebPageProxy::decidePolicyForResponseShared process->send(Messages::WebPage::DidReceivePolicyDeci");
             process->send(Messages::WebPage::DidReceivePolicyDecision(frameID, listenerID, policyDecision
 #if !ENABLE(CONTENT_FILTERING_IN_NETWORKING_PROCESS)
                 , createNetworkExtensionsSandboxExtensions(process)
@@ -6539,10 +6567,14 @@ void WebPageProxy::decidePolicyForResponseShared(Ref<WebProcessProxy>&& process,
         receivedPolicyDecision(policyAction, navigation.get(), nullptr, WTFMove(navigationResponse), WTFMove(sender), WillContinueLoadInNewProcess::No, std::nullopt);
     }, ShouldExpectSafeBrowsingResult::No, ShouldExpectAppBoundDomainResult::No, ShouldWaitForInitialLookalikeCharacterStrings::No);
 
-    if (m_policyClient)
+    if (m_policyClient) {
         m_policyClient->decidePolicyForResponse(*this, *frame, response, request, canShowMIMEType, WTFMove(listener));
-    else
+        WTFLogAlways(" WebPageProxy::decidePolicyForResponseS 1");
+    }
+    else {
         m_navigationClient->decidePolicyForNavigationResponse(*this, WTFMove(navigationResponse), WTFMove(listener));
+        WTFLogAlways(" WebPageProxy::decidePolicyForResponseS 2");
+    }
 }
 
 void WebPageProxy::triggerBrowsingContextGroupSwitchForNavigation(uint64_t navigationID, BrowsingContextGroupSwitchDecision browsingContextGroupSwitchDecision, const RegistrableDomain& responseDomain, NetworkResourceLoadIdentifier existingNetworkResourceLoadIdentifierToResume, CompletionHandler<void(bool success)>&& completionHandler)

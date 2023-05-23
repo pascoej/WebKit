@@ -391,6 +391,7 @@ void WebFrameProxy::commitProvisionalFrame(FrameIdentifier frameID, FrameInfoDat
         m_provisionalFrame->process().provisionalFrameCommitted(*this);
         m_process->send(Messages::WebPage::DidCommitLoadInAnotherProcess(frameID, m_provisionalFrame->layerHostingContextIdentifier(), m_provisionalFrame->process().coreProcessIdentifier()), m_page->webPageID());
         m_process = std::exchange(m_provisionalFrame, nullptr)->process();
+        WTFLogAlways("WebFrameProxy::commitProvisionalFrame(FrameIdentifi");
     }
     if (m_page)
         m_page->didCommitLoadForFrame(frameID, WTFMove(frameInfo), WTFMove(request), navigationID, mimeType, frameHasCustomContentProvider, frameLoadType, certificateInfo, usedLegacyTLS, privateRelayed, containsPluginDocument, hasInsecureContent, mouseEventPolicy, userData);

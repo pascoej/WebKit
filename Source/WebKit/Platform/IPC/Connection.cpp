@@ -1193,6 +1193,7 @@ void Connection::dispatchMessage(Decoder& decoder)
     if (decoder.messageReceiverName() == ReceiverName::AsyncReply) {
         auto handler = takeAsyncReplyHandler(AtomicObjectIdentifier<AsyncReplyIDType>(decoder.destinationID()));
         if (!handler) {
+            WTFLogAlways("Winvalid!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             markCurrentlyDispatchedMessageAsInvalid();
 #if ENABLE(IPC_TESTING_API)
             if (m_ignoreInvalidMessageForTesting)
@@ -1211,14 +1212,17 @@ void Connection::dispatchMessage(Decoder& decoder)
         for (auto& observerWeakPtr : m_messageObservers) {
             if (auto* observer = observerWeakPtr.get())
                 observer->didReceiveMessage(decoder);
-            else
+            else {
+                WTFLogAlways("WE HAVE DEAD OBSERVERS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                 hasDeadObservers = true;
+            }
         }
         if (hasDeadObservers)
             m_messageObservers.removeAllMatching([](auto& observer) { return !observer; });
     }
 #endif
 
+    //WTFLogAlways("to mclinet did recivee messageS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     m_client->didReceiveMessage(*this, decoder);
 }
 
@@ -1248,6 +1252,7 @@ void Connection::dispatchMessage(std::unique_ptr<Decoder> message)
                 return;
 #endif
             m_client->didReceiveInvalidMessage(*this, message->messageName());
+            WTFLogAlways("22Winvalid!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             return;
         }
         m_inDispatchMessageMarkedToUseFullySynchronousModeForTesting++;
@@ -1284,8 +1289,10 @@ void Connection::dispatchMessage(std::unique_ptr<Decoder> message)
 #if ENABLE(IPC_TESTING_API)
         && !m_ignoreInvalidMessageForTesting
 #endif
-        && isValid())
+        && isValid()) {
+        WTFLogAlways("33Winvalid!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         m_client->didReceiveInvalidMessage(*this, message->messageName());
+    }
 
     m_didReceiveInvalidMessage = oldDidReceiveInvalidMessage;
 }

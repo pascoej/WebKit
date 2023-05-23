@@ -84,8 +84,17 @@ public:
     size_t currentBufferPosition() const { return m_bufferPos - m_buffer; }
     size_t length() const { return m_bufferEnd - m_buffer; }
 
-    WARN_UNUSED_RETURN bool isValid() const { return m_bufferPos != nullptr; }
-    void markInvalid() { m_bufferPos = nullptr; }
+    WARN_UNUSED_RETURN bool isValid() const {
+        if (m_bufferPos == nullptr) {
+            WTFLogAlways("completely invalid");
+        }
+        return m_bufferPos != nullptr;
+
+
+    }
+    void markInvalid() { m_bufferPos = nullptr;
+        WTFReportBacktraceWithPrefix("decoder");
+    }
 
     template<typename T>
     WARN_UNUSED_RETURN Span<const T> decodeSpan(size_t);
