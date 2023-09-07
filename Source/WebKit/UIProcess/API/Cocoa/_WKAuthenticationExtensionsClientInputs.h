@@ -35,7 +35,7 @@ WK_CLASS_AVAILABLE(macos(12.0), ios(15.0))
 @interface _WKAuthenticationExtensionsClientInputs : NSObject
 
 @property (nullable, nonatomic, copy) NSString *appid;
-
+@property (nonatomic) BOOL conditionalCreate;
 @end
 
 NS_ASSUME_NONNULL_END

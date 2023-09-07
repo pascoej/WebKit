@@ -135,9 +135,10 @@ typedef NS_ENUM(NSInteger, ASCSecurityKeyPublicKeyCredentialKind) {
 
 @interface ASCWebAuthenticationExtensionsClientInputs : NSObject <NSCopying, NSSecureCoding>
 
-- (instancetype)initWithAppID:(NSString * _Nullable)appID NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithAppID:(NSString * _Nullable)appID isConditionalCreate:(BOOL)isConditionalCreate NS_DESIGNATED_INITIALIZER;
 
 @property (nonatomic, nullable, copy) NSString *appID;
+@property (nonatomic) BOOL isConditionalCreate;
 
 @end
 

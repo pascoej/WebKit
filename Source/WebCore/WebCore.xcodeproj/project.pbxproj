@@ -2031,6 +2031,7 @@
 		51FA2EDF27506FDE0011C15D /* SharedBufferChunkReader.h in Headers */ = {isa = PBXBuildFile; fileRef = 51FA2ED6274F78370011C15D /* SharedBufferChunkReader.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		51FB5504113E3E9100821176 /* JSCloseEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 51FB5502113E3E9100821176 /* JSCloseEvent.h */; };
 		51FB67DC1AE6B82F00D06C5A /* ContentExtensionStyleSheet.h in Headers */ = {isa = PBXBuildFile; fileRef = 51FB67DA1AE6B5E400D06C5A /* ContentExtensionStyleSheet.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		525B0CB12A9F8FD100E8A94B /* MediationRequirement.h in Headers */ = {isa = PBXBuildFile; fileRef = 525B0CB02A9F8FD100E8A94B /* MediationRequirement.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		52688AA627D6A7DA003577A2 /* ResidentKeyRequirement.h in Headers */ = {isa = PBXBuildFile; fileRef = 52688AA327D6A7DA003577A2 /* ResidentKeyRequirement.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		5273CC77256103CF00850007 /* PlatformXRCocoa.h in Headers */ = {isa = PBXBuildFile; fileRef = 5273CC75256103CF00850007 /* PlatformXRCocoa.h */; };
 		5273CC8E25637EB500850007 /* WebXRTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E18D83E0243F71CE009247D6 /* WebXRTest.cpp */; };
@@ -2053,6 +2054,7 @@
 		52D5A1A71C57489D00DE34A3 /* VideoFullscreenModel.h in Headers */ = {isa = PBXBuildFile; fileRef = 52D5A1A41C57488900DE34A3 /* VideoFullscreenModel.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		52D5A1A81C5748A300DE34A3 /* VideoFullscreenModelVideoElement.h in Headers */ = {isa = PBXBuildFile; fileRef = 52D5A1A51C57488900DE34A3 /* VideoFullscreenModelVideoElement.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		52E2CAFC19FF0207001EEB4F /* MediaProducer.h in Headers */ = {isa = PBXBuildFile; fileRef = 52E2CAFB19FF0207001EEB4F /* MediaProducer.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		52E301BF2A9FAF5100B657E1 /* JSCredentialMediationRequirement.h in Headers */ = {isa = PBXBuildFile; fileRef = 52E301BE2A9FAF5000B657E1 /* JSCredentialMediationRequirement.h */; };
 		52F10866162B6DA8009AC81E /* MixedContentChecker.h in Headers */ = {isa = PBXBuildFile; fileRef = 52F10863162B6D82009AC81E /* MixedContentChecker.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		5317612313C516690026E454 /* StyleFlexibleBoxData.h in Headers */ = {isa = PBXBuildFile; fileRef = 5317612113C516690026E454 /* StyleFlexibleBoxData.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		532042021F9A9F1000B81B2A /* UserAgentScriptsData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CDAB6D3017C9259500C60B34 /* UserAgentScriptsData.cpp */; };
@@ -11298,7 +11300,10 @@
 		51FB5503113E3E9100821176 /* JSCloseEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JSCloseEvent.cpp; sourceTree = "<group>"; };
 		51FB67D91AE6B5E400D06C5A /* ContentExtensionStyleSheet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ContentExtensionStyleSheet.cpp; sourceTree = "<group>"; };
 		51FB67DA1AE6B5E400D06C5A /* ContentExtensionStyleSheet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ContentExtensionStyleSheet.h; sourceTree = "<group>"; };
+		5209F6942A9FB1F100A39C56 /* MediationRequirement.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MediationRequirement.h; path = Modules/credentialmanagement/MediationRequirement.h; sourceTree = "<group>"; };
 		52131E5A1C4F15610033F802 /* VideoFullscreenInterfaceMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = VideoFullscreenInterfaceMac.mm; sourceTree = "<group>"; };
+		525B0CB02A9F8FD100E8A94B /* MediationRequirement.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MediationRequirement.h; sourceTree = "<group>"; };
+		525B0CB22A9F905900E8A94B /* CredentialMediationRequirement.idl */ = {isa = PBXFileReference; lastKnownFileType = text; path = CredentialMediationRequirement.idl; sourceTree = "<group>"; };
 		5263BF2027C1B5380085250C /* FakeXRJointStateInit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FakeXRJointStateInit.h; sourceTree = "<group>"; };
 		5263BF2227C1B53B0085250C /* FakeXRJointStateInit.idl */ = {isa = PBXFileReference; lastKnownFileType = text; path = FakeXRJointStateInit.idl; sourceTree = "<group>"; };
 		526724F11CB2FDF60075974D /* TextTrackRepresentationCocoa.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = TextTrackRepresentationCocoa.mm; sourceTree = "<group>"; };
@@ -11327,6 +11332,7 @@
 		52D5A1A51C57488900DE34A3 /* VideoFullscreenModelVideoElement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoFullscreenModelVideoElement.h; sourceTree = "<group>"; };
 		52D5A1A61C57488900DE34A3 /* VideoFullscreenModelVideoElement.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = VideoFullscreenModelVideoElement.mm; sourceTree = "<group>"; };
 		52E2CAFB19FF0207001EEB4F /* MediaProducer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MediaProducer.h; sourceTree = "<group>"; };
+		52E301BE2A9FAF5000B657E1 /* JSCredentialMediationRequirement.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = JSCredentialMediationRequirement.h; path = ../../WebKitBuild/Debug/DerivedSources/WebCore/JSCredentialMediationRequirement.h; sourceTree = "<group>"; };
 		52F10862162B6D82009AC81E /* MixedContentChecker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MixedContentChecker.cpp; sourceTree = "<group>"; };
 		52F10863162B6D82009AC81E /* MixedContentChecker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MixedContentChecker.h; sourceTree = "<group>"; };
 		52F52E1014A0134F00ACC397 /* NSScrollerImpDetails.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NSScrollerImpDetails.mm; sourceTree = "<group>"; };
@@ -20836,6 +20842,8 @@
 		0867D691FE84028FC02AAC07 /* WebCore */ = {
 			isa = PBXGroup;
 			children = (
+				5209F6942A9FB1F100A39C56 /* MediationRequirement.h */,
+				52E301BE2A9FAF5000B657E1 /* JSCredentialMediationRequirement.h */,
 				1C09D04B1E31C32800725F18 /* PAL.xcodeproj */,
 				65C97AF208EA908800ACD273 /* config.h */,
 				EDEC98020AED7E170059137F /* WebCorePrefix.h */,
@@ -25752,11 +25760,13 @@
 				57C7A6891E56946D00C67D71 /* BasicCredential.idl */,
 				77AAD6851ECFBD3900BFA2D1 /* CredentialCreationOptions.h */,
 				77AAD6831ECFB66200BFA2D1 /* CredentialCreationOptions.idl */,
+				525B0CB22A9F905900E8A94B /* CredentialMediationRequirement.idl */,
 				77D50FFB1ED4F16C00DA4C87 /* CredentialRequestOptions.h */,
 				77D50FFA1ED4EC7800DA4C87 /* CredentialRequestOptions.idl */,
 				77D510181ED7159900DA4C87 /* CredentialsContainer.cpp */,
 				77D510161ED6021B00DA4C87 /* CredentialsContainer.h */,
 				57D846291FE99F6300CA3682 /* CredentialsContainer.idl */,
+				525B0CB02A9F8FD100E8A94B /* MediationRequirement.h */,
 				57D846251FE895F600CA3682 /* Navigator+Credentials.idl */,
 				57D846241FE895F500CA3682 /* NavigatorCredentials.cpp */,
 				57D846261FE895F800CA3682 /* NavigatorCredentials.h */,
@@ -38871,6 +38881,7 @@
 				FE6FD48E0F676E9300092873 /* JSCoordinates.h in Headers */,
 				14DCF3B31B6BE2080062D4C2 /* JSCountQueuingStrategy.h in Headers */,
 				77D510061ED4F72500DA4C87 /* JSCredentialCreationOptions.h in Headers */,
+				52E301BF2A9FAF5100B657E1 /* JSCredentialMediationRequirement.h in Headers */,
 				77D510041ED4F71E00DA4C87 /* JSCredentialRequestOptions.h in Headers */,
 				77D5101C1ED722BF00DA4C87 /* JSCredentialsContainer.h in Headers */,
 				975CA2A21303679D00E99AD9 /* JSCrypto.h in Headers */,
@@ -39943,6 +39954,7 @@
 				078E091817D14D1C00420AA1 /* MediaStreamTrack.h in Headers */,
 				078E091917D14D1C00420AA1 /* MediaStreamTrackEvent.h in Headers */,
 				07FFDE69181AED420072D409 /* MediaStreamTrackPrivate.h in Headers */,
+				525B0CB12A9F8FD100E8A94B /* MediationRequirement.h in Headers */,
 				416F429C29C0C19700C080DC /* MediaTrackCapabilities.h in Headers */,
 				932CC0B71DFFD158004C0F9F /* MediaTrackConstraints.h in Headers */,
 				07C1C0E21BFB600100BD2256 /* MediaTrackSupportedConstraints.h in Headers */,

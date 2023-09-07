@@ -42,6 +42,7 @@ struct AuthenticationExtensionsClientInputs {
     String appid;
     bool credProps; // Not serialized but probably should be. Don't re-introduce rdar://101057340 though.
     std::optional<AuthenticationExtensionsClientInputs::LargeBlobInputs> largeBlob;
+    bool conditionalCreate;
 
     WEBCORE_EXPORT Vector<uint8_t> toCBOR() const;
     WEBCORE_EXPORT static std::optional<AuthenticationExtensionsClientInputs> fromCBOR(std::span<const uint8_t>);

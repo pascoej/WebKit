@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2017 Google Inc. All rights reserved.
- * Copyright (C) 2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2023 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,10 +23,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=WEB_AUTHN,
-] dictionary CredentialRequestOptions {
-    CredentialMediationRequirement mediation = "optional";
-    AbortSignal signal;
-    PublicKeyCredentialRequestOptions publicKey;
+#pragma once
+
+#if ENABLE(WEB_AUTHN)
+
+namespace WebCore {
+
+enum class MediationRequirement : uint8_t { Silent, Optional, Required, Conditional };
+
+} // namespace WebCore
+
+namespace WTF {
+
+template<> struct EnumTraits<WebCore::MediationRequirement> {
+    using values = EnumValues<
+        WebCore::MediationRequirement,
+        WebCore::MediationRequirement::Silent,
+        WebCore::MediationRequirement::Optional,
+        WebCore::MediationRequirement::Required,
+        WebCore::MediationRequirement::Conditional
+    >;
 };
+
+} // namespace WTF
+
+
+#endif // ENABLE(WEB_AUTHN)

@@ -431,6 +431,7 @@ $(PROJECT_DIR)/Modules/credentialmanagement/CredentialCreationOptions.idl
 $(PROJECT_DIR)/Modules/credentialmanagement/CredentialRequestOptions.idl
 $(PROJECT_DIR)/Modules/credentialmanagement/CredentialsContainer.idl
 $(PROJECT_DIR)/Modules/credentialmanagement/Navigator+Credentials.idl
+$(PROJECT_DIR)/Modules/credentialmanagement/CredentialMediationRequirement.idl
 $(PROJECT_DIR)/Modules/encryptedmedia/MediaKeyEncryptionScheme.idl
 $(PROJECT_DIR)/Modules/encryptedmedia/MediaKeyMessageEvent.idl
 $(PROJECT_DIR)/Modules/encryptedmedia/MediaKeyMessageEventInit.idl

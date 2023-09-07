@@ -222,7 +222,7 @@ void VirtualHidConnection::parseRequest()
             CBORValue::MapValue response;
             response[CBORValue(1)] = CBORValue("none");
             response[CBORValue(2)] = CBORValue(authenticatorData);
-            auto attObj = buildAttestationMap(WTFMove(authenticatorData), String { emptyString() }, { }, AttestationConveyancePreference::None);
+            auto attObj = buildAttestationMap(WTFMove(authenticatorData), String { emptyString() }, { }, AttestationConveyancePreference::None, true /* shouldZeroAAGUID */);
             response[CBORValue(3)] = CBORValue(attObj);
             auto payload = CBORWriter::write(CBORValue(response));
             Vector<uint8_t> buffer;

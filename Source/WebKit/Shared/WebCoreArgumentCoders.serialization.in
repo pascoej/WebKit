@@ -1443,6 +1443,7 @@ struct WebCore::WebLockManagerSnapshot {
     String appid;
     [NotSerialized] bool credProps;
     std::optional<WebCore::AuthenticationExtensionsClientInputs::LargeBlobInputs> largeBlob;
+    bool conditionalCreate;
 }
 
 [Nested] struct WebCore::AuthenticationExtensionsClientOutputs::CredentialPropertiesOutput {

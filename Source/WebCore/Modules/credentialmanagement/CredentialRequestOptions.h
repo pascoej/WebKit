@@ -29,37 +29,20 @@
 #if ENABLE(WEB_AUTHN)
 
 #include "PublicKeyCredentialRequestOptions.h"
+#include "MediationRequirement.h"
 #include <wtf/RefCounted.h>
 
 namespace WebCore {
 
 class AbortSignal;
-
-enum class MediationRequirement : uint8_t { Silent, Optional, Required, Conditional };
+using CredentialMediationRequirement = MediationRequirement;
 
 struct CredentialRequestOptions {
-    using MediationRequirement = MediationRequirement;
-
     MediationRequirement mediation;
     RefPtr<AbortSignal> signal;
     std::optional<PublicKeyCredentialRequestOptions> publicKey;
 };
 
 } // namespace WebCore
-
-namespace WTF {
-
-template<> struct EnumTraits<WebCore::CredentialRequestOptions::MediationRequirement> {
-    using values = EnumValues<
-        WebCore::CredentialRequestOptions::MediationRequirement,
-        WebCore::CredentialRequestOptions::MediationRequirement::Silent,
-        WebCore::CredentialRequestOptions::MediationRequirement::Optional,
-        WebCore::CredentialRequestOptions::MediationRequirement::Required,
-        WebCore::CredentialRequestOptions::MediationRequirement::Conditional
-    >;
-};
-
-} // namespace WTF
-
 
 #endif // ENABLE(WEB_AUTHN)

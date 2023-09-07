@@ -3294,6 +3294,7 @@ JSCompressionStream.cpp
 JSCompressionStreamEncoder.cpp
 JSComputedEffectTiming.cpp
 JSConstantSourceNode.cpp
+JSCredentialMediationRequirement.cpp
 JSConstantSourceOptions.cpp
 JSContactInfo.cpp
 JSContactProperty.cpp

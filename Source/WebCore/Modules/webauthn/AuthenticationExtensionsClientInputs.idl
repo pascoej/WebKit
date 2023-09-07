@@ -38,4 +38,5 @@
     // For Google to turn off the legacy AppID support.
     boolean credProps;
     AuthenticationExtensionsLargeBlobInputs largeBlob;
+    boolean conditionalCreate;
 };

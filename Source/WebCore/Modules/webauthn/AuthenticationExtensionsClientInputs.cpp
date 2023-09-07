@@ -47,6 +47,9 @@ std::optional<AuthenticationExtensionsClientInputs> AuthenticationExtensionsClie
     it = decodedMap.find(cbor::CBORValue("credProps"));
     if (it != decodedMap.end() && it->second.isBool())
         clientInputs.credProps = it->second.getBool();
+    it = decodedMap.find(cbor::CBORValue("conditionalCreate"));
+    if (it != decodedMap.end() && it->second.isBool())
+        clientInputs.conditionalCreate = it->second.getBool();
     it = decodedMap.find(cbor::CBORValue("largeBlob"));
     if (it != decodedMap.end() && it->second.isMap()) {
         const auto& largeBlobMap = it->second.getMap();
@@ -79,6 +82,8 @@ Vector<uint8_t> AuthenticationExtensionsClientInputs::toCBOR() const
         clientInputsMap[cbor::CBORValue("appid")] = cbor::CBORValue(appid);
     if (credProps)
         clientInputsMap[cbor::CBORValue("credProps")] = cbor::CBORValue(credProps);
+    if (conditionalCreate)
+        clientInputsMap[cbor::CBORValue("conditionalCreate")] = cbor::CBORValue(credProps);
     if (largeBlob) {
         cbor::CBORValue::MapValue largeBlobMap;
         if (!largeBlob->support.isNull())
