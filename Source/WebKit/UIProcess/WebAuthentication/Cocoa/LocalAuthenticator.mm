@@ -701,6 +701,7 @@ void LocalAuthenticator::continueGetAssertionAfterUserVerification(Ref<WebCore::
     auto requestOptions = std::get<PublicKeyCredentialRequestOptions>(requestData().options);
     auto flags = authDataFlags(ClientDataType::Get, verification, response->synchronizable());
     auto authData = buildAuthData(requestOptions.rpId, flags, counter, { });
+    NSLog(@"!!!!!!!!!!!!! Creating credential with authdata: %s, flags: %d", base64EncodeToString(authData).utf8().data(), (int)flags);
 
     // Step 11.
     RetainPtr<CFDataRef> signature;
@@ -735,6 +736,7 @@ void LocalAuthenticator::continueGetAssertionAfterUserVerification(Ref<WebCore::
         CFErrorRef errorRef = nullptr;
         // FIXME: Converting CFTypeRef to SecKeyRef is quite subtle here.
         signature = adoptCF(SecKeyCreateSignature((__bridge SecKeyRef)((id)privateKeyRef), kSecKeyAlgorithmECDSASignatureMessageX962SHA256, (__bridge CFDataRef)dataToSign, &errorRef));
+        NSLog(@"!!!!!!!!!!!!!!!! Generated signature! %@ for authData %s clientDataHash: %s", [((NSData *)signature.get()) base64EncodedStringWithOptions:0], base64EncodeToString(authData).utf8().data(), base64EncodeToString(requestData().hash).utf8().data());
         auto retainError = adoptCF(errorRef);
         if (errorRef) {
             RELEASE_LOG_ERROR(WebAuthn, "Couldn't generate signature: %@", ((NSError*)errorRef).localizedDescription);

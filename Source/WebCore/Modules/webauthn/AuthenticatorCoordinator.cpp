@@ -48,6 +48,7 @@
 #include "WebAuthenticationConstants.h"
 #include "WebAuthenticationUtils.h"
 #include <pal/crypto/CryptoDigest.h>
+#include <wtf/text/Base64.h>
 #include <wtf/NeverDestroyed.h>
 
 namespace WebCore {
@@ -197,6 +198,7 @@ void AuthenticatorCoordinator::create(const Document& document, CredentialCreati
 
 void AuthenticatorCoordinator::discoverFromExternalSource(const Document& document, CredentialRequestOptions&& requestOptions, const ScopeAndCrossOriginParent& scopeAndCrossOriginParent, CredentialPromise&& promise)
 {
+    WTFLogAlways("!!!!!!!!!!!! AuthenticatorCoordinator::discoverFromExternalSource(c");
     using namespace AuthenticatorCoordinatorInternal;
 
     auto& callerOrigin = document.securityOrigin();
@@ -243,7 +245,7 @@ void AuthenticatorCoordinator::discoverFromExternalSource(const Document& docume
     // Step 10-12.
     auto clientDataJson = buildClientDataJson(ClientDataType::Get, options.challenge, callerOrigin, scopeAndCrossOriginParent.first);
     auto clientDataJsonHash = buildClientDataJsonHash(clientDataJson);
-
+    WTFLogAlways("!!!!!!!!!!!!!!!! clientDataJSON: %s hash: %s", base64EncodeToString(clientDataJson->toVector()).utf8().data(), base64EncodeToString(clientDataJsonHash).utf8().data());
     // Step 4, 14-19.
     if (!m_client) {
         promise.reject(Exception { ExceptionCode::UnknownError, "Unknown internal error."_s });
@@ -265,15 +267,25 @@ void AuthenticatorCoordinator::discoverFromExternalSource(const Document& docume
         }
 
         if (auto response = AuthenticatorResponse::tryCreate(WTFMove(data), attachment)) {
-            response->setClientDataJSON(WTFMove(clientDataJson));
+            //response->setClientDataJSON(WTFMove(clientDataJson));
+            WTFLogAlways("!!!!!!!!!!!!!!! returned real value clientDataJSON: %s", base64EncodeToString(response->clientDataJSON()->toVector()).utf8().data());
+        WTFLogAlways("!!!!!!!!!!! authData: %s signature: %s", base64EncodeToString(downcast<AuthenticatorAssertionResponse>(response)->authenticatorData()->toVector()).utf8().data(), base64EncodeToString(downcast<AuthenticatorAssertionResponse>(response)->signature()->toVector()).utf8().data());
+
             promise.resolve(PublicKeyCredential::create(response.releaseNonNull()).ptr());
             return;
         }
+        WTFLogAlways("!!!!!!!!!!!! exception");
+
         ASSERT(!exception.message.isNull());
         promise.reject(exception.toException());
     };
+    auto callbackmain = [callback = WTFMove(callback)](AuthenticatorResponseData&& data, AuthenticatorAttachment attachment, ExceptionData&& exception) mutable {
+        ensureOnMainRunLoop([callback = WTFMove(callback), data = WTFMove(data), attachment, exception = WTFMove(exception)] () mutable {
+            callback(WTFMove(data), attachment, WTFMove(exception));
+        });
+    };
     // Async operations are dispatched and handled in the messenger.
-    m_client->getAssertion(*frame, callerOrigin, clientDataJsonHash, options, requestOptions.mediation, scopeAndCrossOriginParent, WTFMove(callback));
+    m_client->getAssertion(*frame, callerOrigin, clientDataJsonHash, options, requestOptions.mediation, scopeAndCrossOriginParent, WTFMove(callbackmain));
 }
 
 void AuthenticatorCoordinator::isUserVerifyingPlatformAuthenticatorAvailable(const Document& document, DOMPromiseDeferred<IDLBoolean>&& promise) const

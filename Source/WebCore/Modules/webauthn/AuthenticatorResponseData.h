@@ -39,6 +39,7 @@ class AuthenticatorResponse;
 struct AuthenticatorResponseBaseData {
     RefPtr<ArrayBuffer> rawId;
     std::optional<AuthenticationExtensionsClientOutputs> extensionOutputs;
+    RefPtr<ArrayBuffer> clientDataJSON;
 };
 
 struct AuthenticatorAttestationResponseData {

@@ -98,6 +98,7 @@ using namespace WebCore;
 
 static inline Ref<ArrayBuffer> toArrayBuffer(NSData *data)
 {
+    [data retain];
     return ArrayBuffer::create(reinterpret_cast<const uint8_t *>(data.bytes), data.length);
 }
 
@@ -289,18 +290,19 @@ void WebAuthenticatorCoordinatorProxy::performRequest(WebAuthenticationRequestDa
     }
 #if HAVE(WEB_AUTHN_AS_MODERN)
     m_isConditionalAssertion = requestData.mediation == MediationRequirement::Conditional;
-    auto controller = constructASController(WTFMove(requestData));
+    auto requestDataCopy = requestData;
+    auto controller = constructASController(WTFMove(requestDataCopy));
     if (!controller) {
         handler(WebCore::AuthenticatorResponseData { }, AuthenticatorAttachment::Platform, { ExceptionCode::NotAllowedError, @"" });
         return;
     }
     m_controller = WTFMove(controller);
     m_completionHandler = WTFMove(handler);
-    m_delegate = adoptNS([[_WKASDelegate alloc] initWithPage:WTFMove(requestData.page) completionHandler:makeBlockPtr([this](ASAuthorization *auth, NSError *error) mutable {
-        ensureOnMainRunLoop([this, auth = retainPtr(auth)]() {
+    m_delegate = adoptNS([[_WKASDelegate alloc] initWithPage:WTFMove(requestData.page) completionHandler:makeBlockPtr([this, requestDataCopy = WTFMove(requestDataCopy)](ASAuthorization *auth, NSError *error) mutable {
+        ensureOnMainRunLoop([this, requestDataCopy = WTFMove(requestDataCopy), auth = retainPtr(auth)]() mutable {
             WebCore::AuthenticatorResponseData response = { };
             WebCore::ExceptionData exceptionData = { ExceptionCode::NotAllowedError, @"" };
-            WebCore::AuthenticatorAttachment attachment = AuthenticatorAttachment::Platform;
+            //WebCore::AuthenticatorAttachment attachment = AuthenticatorAttachment::Platform;
             if ([auth.get().credential isKindOfClass:getASAuthorizationPlatformPublicKeyCredentialRegistrationClass()]) {
                 response.isAuthenticatorAttestationResponse = true;
                 auto credential = retainPtr((ASAuthorizationPlatformPublicKeyCredentialRegistration *)auth.get().credential);
@@ -313,6 +315,7 @@ void WebAuthenticatorCoordinatorProxy::performRequest(WebAuthenticationRequestDa
                 response.authenticatorData = toArrayBuffer(credential.get().rawAuthenticatorData);
                 response.signature = toArrayBuffer(credential.get().signature);
                 response.userHandle = toArrayBuffer(credential.get().userID);
+                NSLog(@"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! clientdatajson: %@", [credential.get().rawClientDataJSON base64EncodedStringWithOptions:0]);
             } else if ([auth.get().credential isKindOfClass:getASAuthorizationSecurityKeyPublicKeyCredentialRegistrationClass()]) {
                 auto credential = retainPtr((ASAuthorizationSecurityKeyPublicKeyCredentialRegistration *)auth.get().credential);
                 response.isAuthenticatorAttestationResponse = true;
@@ -327,10 +330,18 @@ void WebAuthenticatorCoordinatorProxy::performRequest(WebAuthenticationRequestDa
                 response.userHandle = toArrayBuffer(credential.get().userID);
             }
             if (!m_paused) {
-                m_completionHandler(response, attachment, exceptionData);
+                //m_completionHandler(response, attachment, exceptionData);
                 m_delegate.clear();
                 m_controller.clear();
                 m_isConditionalAssertion = false;
+                auto context = contextForRequest(WTFMove(requestDataCopy));
+                if (context.get() == nullptr) {
+                    m_completionHandler({ }, (AuthenticatorAttachment)0, ExceptionData { ExceptionCode::NotAllowedError, "The origin of the document is not the same as its ancestors."_s });
+                    RELEASE_LOG_ERROR(WebAuthn, "The origin of the document is not the same as its ancestors.");
+                    return;
+                }
+                performRequestLegacy(context, WTFMove(m_completionHandler));
+                return;
             }
         });
     }).get()]);
