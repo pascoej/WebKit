@@ -308,6 +308,7 @@ void WebAuthenticatorCoordinatorProxy::performRequest(WebAuthenticationRequestDa
                 auto credential = retainPtr((ASAuthorizationPlatformPublicKeyCredentialRegistration *)auth.get().credential);
                 response.rawId = toArrayBuffer(credential.get().credentialID);
                 response.attestationObject = toArrayBuffer(credential.get().rawAttestationObject);
+                response.clientDataJSON = toArrayBuffer(credential.get().rawClientDataJSON);
                 response.transports = { };
             } else if ([auth.get().credential isKindOfClass:getASAuthorizationPlatformPublicKeyCredentialAssertionClass()]) {
                 auto credential = retainPtr((ASAuthorizationPlatformPublicKeyCredentialAssertion *)auth.get().credential);
@@ -315,12 +316,14 @@ void WebAuthenticatorCoordinatorProxy::performRequest(WebAuthenticationRequestDa
                 response.authenticatorData = toArrayBuffer(credential.get().rawAuthenticatorData);
                 response.signature = toArrayBuffer(credential.get().signature);
                 response.userHandle = toArrayBuffer(credential.get().userID);
-                NSLog(@"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! clientdatajson: %@", [credential.get().rawClientDataJSON base64EncodedStringWithOptions:0]);
+                response.clientDataJSON = toArrayBuffer(credential.get().rawClientDataJSON);
+                NSLog(@"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! clientdatajson: %@", [[NSString alloc] initWithData:credential.get().rawClientDataJSON encoding:NSUTF8StringEncoding]);
             } else if ([auth.get().credential isKindOfClass:getASAuthorizationSecurityKeyPublicKeyCredentialRegistrationClass()]) {
                 auto credential = retainPtr((ASAuthorizationSecurityKeyPublicKeyCredentialRegistration *)auth.get().credential);
                 response.isAuthenticatorAttestationResponse = true;
                 response.rawId = toArrayBuffer(credential.get().credentialID);
                 response.attestationObject = toArrayBuffer(credential.get().rawAttestationObject);
+                response.clientDataJSON = toArrayBuffer(credential.get().rawClientDataJSON);
                 response.transports = { };
             } else if ([auth.get().credential isKindOfClass:getASAuthorizationSecurityKeyPublicKeyCredentialAssertionClass()]) {
                 auto credential = retainPtr((ASAuthorizationSecurityKeyPublicKeyCredentialAssertion *)auth.get().credential);
@@ -328,6 +331,7 @@ void WebAuthenticatorCoordinatorProxy::performRequest(WebAuthenticationRequestDa
                 response.authenticatorData = toArrayBuffer(credential.get().rawAuthenticatorData);
                 response.signature = toArrayBuffer(credential.get().signature);
                 response.userHandle = toArrayBuffer(credential.get().userID);
+                response.clientDataJSON = toArrayBuffer(credential.get().rawClientDataJSON);
             }
             if (!m_paused) {
                 //m_completionHandler(response, attachment, exceptionData);

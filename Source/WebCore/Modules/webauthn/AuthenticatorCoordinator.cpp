@@ -245,7 +245,7 @@ void AuthenticatorCoordinator::discoverFromExternalSource(const Document& docume
     // Step 10-12.
     auto clientDataJson = buildClientDataJson(ClientDataType::Get, options.challenge, callerOrigin, scopeAndCrossOriginParent.first);
     auto clientDataJsonHash = buildClientDataJsonHash(clientDataJson);
-    WTFLogAlways("!!!!!!!!!!!!!!!! clientDataJSON: %s hash: %s", base64EncodeToString(clientDataJson->toVector()).utf8().data(), base64EncodeToString(clientDataJsonHash).utf8().data());
+    WTFLogAlways("!!!!!!!!!!!!!!!! clientDataJSON: %s hash: %s", String::fromUTF8(clientDataJson->toVector()).utf8().data(), base64EncodeToString(clientDataJsonHash).utf8().data());
     // Step 4, 14-19.
     if (!m_client) {
         promise.reject(Exception { ExceptionCode::UnknownError, "Unknown internal error."_s });
@@ -268,7 +268,8 @@ void AuthenticatorCoordinator::discoverFromExternalSource(const Document& docume
 
         if (auto response = AuthenticatorResponse::tryCreate(WTFMove(data), attachment)) {
             //response->setClientDataJSON(WTFMove(clientDataJson));
-            WTFLogAlways("!!!!!!!!!!!!!!! returned real value clientDataJSON: %s", base64EncodeToString(response->clientDataJSON()->toVector()).utf8().data());
+            auto respCDJ = response->clientDataJSON()->toVector();
+            WTFLogAlways("!!!!!!!!!!!!!!! returned real value clientDataJSON: %s", String::fromUTF8(response->clientDataJSON()->toVector()).utf8().data());
         WTFLogAlways("!!!!!!!!!!! authData: %s signature: %s", base64EncodeToString(downcast<AuthenticatorAssertionResponse>(response)->authenticatorData()->toVector()).utf8().data(), base64EncodeToString(downcast<AuthenticatorAssertionResponse>(response)->signature()->toVector()).utf8().data());
 
             promise.resolve(PublicKeyCredential::create(response.releaseNonNull()).ptr());
