@@ -67,6 +67,7 @@
 #include "Theme.h"
 #include <pal/text/TextEncoding.h>
 #include "UserGestureIndicator.h"
+#include "wtf/TypeCasts.h"
 #include <JavaScriptCore/ContentSearchUtilities.h>
 #include <JavaScriptCore/IdentifiersFactory.h>
 #include <JavaScriptCore/RegularExpression.h>
@@ -1076,16 +1077,18 @@ void InspectorPageAgent::didRecalculateStyle()
     m_overlay->update();
 }
 
-Ref<Inspector::Protocol::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalFrame* frame)
+Ref<Inspector::Protocol::Page::Frame> InspectorPageAgent::buildObjectForFrame(Frame* frame)
 {
     ASSERT_ARG(frame, frame);
 
+    auto localFrame = dynamicDowncast<LocalFrame>(frame);
+
     auto frameObject = Inspector::Protocol::Page::Frame::create()
         .setId(frameId(frame))
-        .setLoaderId(loaderId(frame->loader().documentLoader()))
-        .setUrl(frame->document()->url().string())
-        .setMimeType(frame->loader().documentLoader()->responseMIMEType())
-        .setSecurityOrigin(frame->document()->securityOrigin().toRawString())
+        .setLoaderId(loaderId(localFrame->loader().documentLoader()))
+        .setUrl(localFrame->document()->url().string())
+        .setMimeType(localFrame->loader().documentLoader()->responseMIMEType())
+        .setSecurityOrigin(localFrame->document()->securityOrigin().toRawString())
         .release();
     if (frame->tree().parent())
         frameObject->setParentId(frameId(dynamicDowncast<LocalFrame>(frame->tree().parent())));
