@@ -2113,6 +2113,8 @@ public:
 #if PLATFORM(COCOA)
     void grantAccessToCurrentPasteboardData(const String& pasteboardName);
 #endif
+    
+    void forEachWebContentProcess(Function<void(WebProcessProxy&, WebCore::PageIdentifier)>&&);
 
 #if PLATFORM(MAC)
     NSMenu *activeContextMenu() const;
@@ -2430,7 +2432,6 @@ private:
     bool attachmentElementEnabled();
     bool modelElementEnabled();
 
-    void forEachWebContentProcess(Function<void(WebProcessProxy&, WebCore::PageIdentifier)>&&);
 
     bool shouldForceForegroundPriorityForClientNavigation() const;
 

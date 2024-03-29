@@ -537,6 +537,7 @@ Inspector::Protocol::ErrorStringOr<Ref<Inspector::Protocol::DOM::Node>> Inspecto
 
 void InspectorDOMAgent::pushChildNodesToFrontend(Inspector::Protocol::DOM::NodeId nodeId, int depth)
 {
+    // prolly what we do need
     Node* node = nodeForId(nodeId);
     if (!node || (node->nodeType() != Node::ELEMENT_NODE && node->nodeType() != Node::DOCUMENT_NODE && node->nodeType() != Node::DOCUMENT_FRAGMENT_NODE))
         return;
@@ -3058,7 +3059,7 @@ Inspector::Protocol::ErrorStringOr<Inspector::Protocol::DOM::NodeId> InspectorDO
         return makeUnexpected(errorString);
     }
 
-    return makeUnexpected("Missing node for given path"_s);
+    return makeUnexpected("Missing node for given path: "_s + path);
 }
 
 RefPtr<Inspector::Protocol::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(Node* node, const String& objectGroup)

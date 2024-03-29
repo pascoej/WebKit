@@ -766,6 +766,7 @@ Inspector::Protocol::ErrorStringOr<void> InspectorPageAgent::deleteCookie(const 
 Inspector::Protocol::ErrorStringOr<Ref<Inspector::Protocol::Page::FrameResourceTree>> InspectorPageAgent::getResourceTree()
 {
     auto* localMainFrame = dynamicDowncast<LocalFrame>(m_inspectedPage.mainFrame());
+    WTFLogAlways("!!!!!!!!!! got a remote child we aint deal with");
     return buildObjectForFrameTree(localMainFrame);
 }
 
@@ -1135,8 +1136,10 @@ Ref<Inspector::Protocol::Page::FrameResourceTree> InspectorPageAgent::buildObjec
             result->setChildFrames(*childrenArray);
         }
         auto* localChild = dynamicDowncast<LocalFrame>(child);
-        if (!localChild)
+        if (!localChild) {
+            WTFLogAlways("!!!!!!!!!! got a remote child we aint deal with");
             continue;
+        }
         childrenArray->addItem(buildObjectForFrameTree(localChild));
     }
     return result;

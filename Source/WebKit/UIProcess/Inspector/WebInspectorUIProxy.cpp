@@ -234,6 +234,7 @@ void WebInspectorUIProxy::updateForNewPageProcess(WebPageProxy& inspectedPage)
     m_inspectedPageIdentifier = m_inspectedPage->identifier();
 
     m_inspectedPage->process().addMessageReceiver(Messages::WebInspectorUIProxy::messageReceiverName(), m_inspectedPage->webPageID(), *this);
+    // WE NEED TO ATTACH TO THE OTHER ONES TOO
 
     if (m_inspectorPage)
         m_inspectorPage->send(Messages::WebInspectorUI::UpdateConnection());

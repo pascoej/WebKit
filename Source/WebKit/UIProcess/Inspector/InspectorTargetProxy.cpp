@@ -65,8 +65,11 @@ void InspectorTargetProxy::connect(Inspector::FrontendChannel::ConnectionType co
         return;
     }
 
-    if (m_page.hasRunningProcess())
-        m_page.send(Messages::WebPage::ConnectInspector(identifier(), connectionType));
+    if (m_page.hasRunningProcess()) {
+        m_page.forEachWebContentProcess([&](auto& webProcess, auto pageID) {
+            webProcess.send(Messages::WebPage::ConnectInspector(identifier(), connectionType), pageID);
+        });
+    }
 }
 
 void InspectorTargetProxy::disconnect()
@@ -90,8 +93,11 @@ void InspectorTargetProxy::sendMessageToTargetBackend(const String& message)
         return;
     }
 
-    if (m_page.hasRunningProcess())
-        m_page.send(Messages::WebPage::SendMessageToTargetBackend(identifier(), message));
+    if (m_page.hasRunningProcess()) {
+        m_page.forEachWebContentProcess([&](auto& webProcess, auto pageID) {
+            webProcess.send(Messages::WebPage::SendMessageToTargetBackend(identifier(), message), pageID);
+        });
+    }
 }
 
 void InspectorTargetProxy::didCommitProvisionalTarget()
