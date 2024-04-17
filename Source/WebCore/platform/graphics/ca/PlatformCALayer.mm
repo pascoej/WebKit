@@ -76,8 +76,8 @@ void PlatformCALayer::drawRepaintIndicator(GraphicsContext& graphicsContext, Pla
     constexpr auto acceleratedContextLabelColor = Color::red;
     constexpr auto unacceleratedContextLabelColor = Color::white;
     constexpr auto displayListBorderColor = Color::black.colorWithAlphaByte(166);
-
-    TextRun textRun(String::number(repaintCount));
+    (void)repaintCount;
+    TextRun textRun(String("yolo"_s));
 
     FontCascadeDescription fontDescription;
     fontDescription.setOneFamily("Helvetica"_s);

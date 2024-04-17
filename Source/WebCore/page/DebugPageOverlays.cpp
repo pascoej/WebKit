@@ -495,6 +495,17 @@ void InteractionRegionOverlay::drawSettings(GraphicsContext& context)
         const auto& setting = m_settings[i];
         drawCheckbox(setting.name, context, font, rectForSettingAtIndex(i), setting.value);
     }
+    
+    for (auto* frame = &m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (!frame->virtualView())
+            continue;
+        auto frameView = frame->virtualView();
+        auto debugStr = (is<RemoteFrame>(frame) ? "remote(" : "local(") + frame->frameID().toString() + ")";
+        TextRun textRun = TextRun(debugStr);
+        context.setFillColor(Color::black);
+        
+        context.drawText(font, textRun, FloatPoint{static_cast<float>(frameView->x()), static_cast<float>(frameView->y() + 10)});
+    }
 }
 
 void InteractionRegionOverlay::drawRect(PageOverlay&, GraphicsContext& context, const IntRect& dirtyRect)

@@ -595,12 +595,13 @@ void RemoteLayerTreeEventDispatcher::animationsWereAddedToNode(RemoteLayerTreeNo
     m_effectStacks.set(node.layerID(), effectStack.releaseNonNull());
 }
 
-void RemoteLayerTreeEventDispatcher::animationsWereRemovedFromNode(RemoteLayerTreeNode& node)
+void RemoteLayerTreeEventDispatcher::animationsWereRemovedFromNode(RemoteLayerTreeNode& )
 {
+    /*
     ASSERT(isMainRunLoop());
     assertIsHeld(m_effectStacksLock);
     if (auto effectStack = m_effectStacks.take(node.layerID()))
-        effectStack->clear(node.layer());
+        effectStack->clear(node.layer());*/
 }
 
 void RemoteLayerTreeEventDispatcher::updateAnimations()
