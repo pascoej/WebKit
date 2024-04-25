@@ -11816,9 +11816,15 @@ void WebPageProxy::setCaretBlinkingSuspended(bool suspended)
     send(Messages::WebPage::SetCaretBlinkingSuspended(suspended));
 }
 
-void WebPageProxy::performImmediateActionHitTestAtLocation(FloatPoint point)
+void WebPageProxy::performImmediateActionHitTestAtLocation(const WebCore::FrameIdentifier& frameID, FloatPoint point)
 {
-    send(Messages::WebPage::PerformImmediateActionHitTestAtLocation(point));
+    sendToProcessContainingFrame(frameID, Messages::WebPage::PerformImmediateActionHitTestAtLocation(frameID, point), [this, protectedThis = Ref { *this }] (std::optional<WebCore::RemoteUserInputEventData> remoteUserInputEventData) {
+        if (!m_pageClient)
+            return;
+        if (remoteUserInputEventData) {
+            performImmediateActionHitTestAtLocation(remoteUserInputEventData->targetFrameID, remoteUserInputEventData->transformedPoint);
+        }
+    });
 }
 
 void WebPageProxy::immediateActionDidUpdate()
@@ -11838,6 +11844,14 @@ void WebPageProxy::immediateActionDidComplete()
 
 void WebPageProxy::didPerformImmediateActionHitTest(const WebHitTestResultData& result, bool contentPreventsDefault, const UserData& userData)
 {
+    if (auto parentFrameID = result.frameInfo->parentFrameID) {
+        auto dictionaryOrigin = result.dictionaryPopupInfo.origin;
+        sendToProcessContainingFrame(parentFrameID, Messages::WebPage::RemoteViewPointToRootView(result.frameInfo->frameID, dictionaryOrigin), [protectedThis = Ref { *this }, this, &userData, &result, contentPreventsDefault](FloatPoint point) mutable {
+            // result.dictionaryPopupInfo.origin = point;
+            protectedThis->protectedPageClient()->didPerformImmediateActionHitTest(result, contentPreventsDefault, m_process->transformHandlesToObjects(userData.protectedObject().get()).get());
+        });
+        return;
+    }
     protectedPageClient()->didPerformImmediateActionHitTest(result, contentPreventsDefault, m_process->transformHandlesToObjects(userData.protectedObject().get()).get());
 }
 

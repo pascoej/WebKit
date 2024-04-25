@@ -175,7 +175,7 @@
     _state = WebKit::ImmediateActionState::Pending;
     immediateActionRecognizer.animationController = nil;
 
-    RefPtr { _page.get() }->performImmediateActionHitTestAtLocation([immediateActionRecognizer locationInView:immediateActionRecognizer.view]);
+    RefPtr { _page.get() }->performImmediateActionHitTestAtLocation(RefPtr { _page.get() }->mainFrame()->frameID(), [immediateActionRecognizer locationInView:immediateActionRecognizer.view]);
 }
 
 - (void)immediateActionRecognizerWillBeginAnimation:(NSImmediateActionGestureRecognizer *)immediateActionRecognizer

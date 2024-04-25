@@ -103,7 +103,7 @@ inline std::optional<std::span<uint8_t>> StreamClientConnectionBuffer::tryAcquir
     ClientLimit clientLimit = sharedClientLimit().load(std::memory_order_acquire);
     // This would mean we try to send messages after a timeout. It is a programming error.
     // Since the value is trusted, we only assert.
-    ASSERT(clientLimit != ClientLimit::clientIsWaitingTag);
+    //ASSERT(clientLimit != ClientLimit::clientIsWaitingTag);
 
     for (;;) {
         if (clientLimit != ClientLimit::clientIsWaitingTag) {

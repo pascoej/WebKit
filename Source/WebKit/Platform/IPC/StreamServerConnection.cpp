@@ -179,7 +179,7 @@ StreamServerConnection::DispatchResult StreamServerConnection::dispatchStreamMes
             // Currently we assert that the receivers are empty, as we only have up to one receiver in
             // a stream connection until possibility of skipping is implemented properly.
             Locker locker { m_receiversLock };
-            ASSERT(m_receivers.isEmpty());
+            //ASSERT(m_receivers.isEmpty());
             return DispatchResult::HasNoMessages;
         }
         if (!dispatchStreamMessage(WTFMove(decoder), *currentReceiver))

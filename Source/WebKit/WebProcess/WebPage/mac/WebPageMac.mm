@@ -87,6 +87,8 @@
 #import <WebCore/PlatformKeyboardEvent.h>
 #import <WebCore/PluginDocument.h>
 #import <WebCore/PointerCharacteristics.h>
+#import <WebCore/RemoteFrameView.h>
+#import <WebCore/RemoteUserInputEventData.h>
 #import <WebCore/RenderElement.h>
 #import <WebCore/RenderObject.h>
 #import <WebCore/RenderStyle.h>
@@ -818,22 +820,24 @@ OptionSet<PointerCharacteristics> WebPage::pointerCharacteristicsOfAllAvailableP
     return PointerCharacteristics::Fine;
 }
 
-void WebPage::performImmediateActionHitTestAtLocation(WebCore::FloatPoint locationInViewCoordinates)
+void WebPage::performImmediateActionHitTestAtLocation(WebCore::FrameIdentifier frameID, WebCore::FloatPoint locationInViewCoordinates, CompletionHandler<void(std::optional<RemoteUserInputEventData>)>&& completionHandler)
 {
     layoutIfNeeded();
 
-    RefPtr localMainFrame = dynamicDowncast<WebCore::LocalFrame>(corePage()->mainFrame());
-    if (!localMainFrame)
+    auto* currentFrame = WebProcess::singleton().webFrame(frameID);
+    
+    RefPtr localCurrentFrame = currentFrame->protectedCoreLocalFrame();
+    if (!localCurrentFrame)
         return;
+    RefPtr currentFrameView = localCurrentFrame->view();
 
-    auto& mainFrame = *localMainFrame;
-    if (!mainFrame.view() || !mainFrame.view()->renderView()) {
+    if (!currentFrameView || !currentFrameView->renderView()) {
         send(Messages::WebPageProxy::DidPerformImmediateActionHitTest(WebHitTestResultData(), false, UserData()));
         return;
     }
 
-    auto locationInContentCoordinates = mainFrame.view()->rootViewToContents(roundedIntPoint(locationInViewCoordinates));
-    auto hitTestResult = mainFrame.eventHandler().hitTestResultAtPoint(locationInContentCoordinates, {
+    auto locationInContentCoordinates = localCurrentFrame->view()->rootViewToContents(roundedIntPoint(locationInViewCoordinates));
+    auto hitTestResult = localCurrentFrame->eventHandler().hitTestResultAtPoint(locationInContentCoordinates, {
         HitTestRequest::Type::ReadOnly,
         HitTestRequest::Type::Active,
         HitTestRequest::Type::DisallowUserAgentShadowContentExceptForImageOverlays,
@@ -841,17 +845,33 @@ void WebPage::performImmediateActionHitTestAtLocation(WebCore::FloatPoint locati
     });
 
     bool immediateActionHitTestPreventsDefault = false;
+    
+    auto subframe = EventHandler::subframeForTargetNode(hitTestResult.protectedTargetNode().get());
+    if (auto* remoteFrame = dynamicDowncast<RemoteFrame>(subframe).get()) {
+        if (RefPtr remoteFrameView = remoteFrame->view()) {
+            auto remoteUserInputEventData = RemoteUserInputEventData {
+                  remoteFrame->frameID(),
+                remoteFrameView->rootViewToContents(roundedIntPoint(locationInViewCoordinates))
+            };
+            completionHandler(remoteUserInputEventData);
+            return;
+        }
+        
+    }
+    
     RefPtr element = hitTestResult.targetElement();
 
-    mainFrame.eventHandler().setImmediateActionStage(ImmediateActionStage::PerformedHitTest);
+    localCurrentFrame->eventHandler().setImmediateActionStage(ImmediateActionStage::PerformedHitTest);
     if (element)
         immediateActionHitTestPreventsDefault = element->dispatchMouseForceWillBegin();
 
     WebHitTestResultData immediateActionResult(hitTestResult, { });
 
     RefPtr focusedOrMainFrame = corePage()->focusController().focusedOrMainFrame();
-    if (!focusedOrMainFrame)
+    if (!focusedOrMainFrame) {
+        completionHandler(std::nullopt);
         return;
+    }
     auto selectionRange = focusedOrMainFrame->selection().selection().firstRange();
 
     auto indicatorOptions = [&](const SimpleRange& range) {
@@ -867,7 +887,7 @@ void WebPage::performImmediateActionHitTestAtLocation(WebCore::FloatPoint locati
         immediateActionResult.linkTextIndicator = TextIndicator::createWithRange(elementRange, indicatorOptions(elementRange), TextIndicatorPresentationTransition::FadeIn);
     }
 
-    if (auto lookupResult = lookupTextAtLocation(locationInViewCoordinates)) {
+    if (auto lookupResult = lookupTextAtLocation(frameID, locationInViewCoordinates)) {
         auto lookupRange = WTFMove(*lookupResult);
         immediateActionResult.lookupText = plainText(lookupRange);
         if (auto* node = hitTestResult.innerNode()) {
@@ -926,11 +946,13 @@ void WebPage::performImmediateActionHitTestAtLocation(WebCore::FloatPoint locati
 
     immediateActionResult.elementBoundingBox = immediateActionResult.elementBoundingBox.toRectWithExtentsClippedToNumericLimits();
     send(Messages::WebPageProxy::DidPerformImmediateActionHitTest(immediateActionResult, immediateActionHitTestPreventsDefault, UserData(WebProcess::singleton().transformObjectsToHandles(userData.get()).get())));
+    completionHandler(std::nullopt);
 }
 
-std::optional<WebCore::SimpleRange> WebPage::lookupTextAtLocation(FloatPoint locationInViewCoordinates)
+std::optional<WebCore::SimpleRange> WebPage::lookupTextAtLocation(FrameIdentifier frameID, FloatPoint locationInViewCoordinates)
 {
-    RefPtr localMainFrame = dynamicDowncast<LocalFrame>(m_page->mainFrame());
+    auto* currentFrame = WebProcess::singleton().webFrame(frameID);
+    RefPtr localMainFrame = dynamicDowncast<LocalFrame>(currentFrame->coreFrame());
     if (!localMainFrame || !localMainFrame->view() || !localMainFrame->view()->renderView())
         return std::nullopt;
 
