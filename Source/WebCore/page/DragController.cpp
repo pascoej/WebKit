@@ -80,6 +80,7 @@
 #include "PromisedAttachmentInfo.h"
 #include "Range.h"
 #include "RemoteFrame.h"
+#include "RemoteFrameView.h"
 #include "RemoteUserInputEventData.h"
 #include "RenderAttachment.h"
 #include "RenderFileUploadControl.h"
@@ -264,6 +265,7 @@ bool DragController::performDragOperation(DragData&& dragData)
         if (preventedDefault) {
             clearDragCaret();
             m_documentUnderMouse = nullptr;
+            // this needs to work under site isolation
             return true;
         }
     }

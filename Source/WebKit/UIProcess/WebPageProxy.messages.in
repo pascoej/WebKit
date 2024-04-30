@@ -313,6 +313,10 @@ messages -> WebPageProxy {
     StartDrag(WebCore::SelectionData selectionData, OptionSet<WebCore::DragOperation> dragOperationMask, std::optional<WebCore::ShareableBitmapHandle> dragImage, WebCore::IntPoint dragImageHotspot)
 #endif
 
+#if ENABLE(DRAG_SUPPORT) && !PLATFORM(GTK)
+    PerformDragOperationWithRemoteUserInputEventData(struct WebCore::RemoteUserInputEventData remoteUserInputEventData, WebKit::SandboxExtensionHandle sandboxExtensionHandle, Vector<WebKit::SandboxExtensionHandle> sandboxExtensionsForUpload) -> (bool handled)
+#endif
+
 #if PLATFORM(IOS_FAMILY) && ENABLE(DRAG_SUPPORT)
     DidHandleDragStartRequest(bool started)
     DidHandleAdditionalDragItemsRequest(bool added)

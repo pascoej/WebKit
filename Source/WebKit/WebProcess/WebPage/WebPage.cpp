@@ -5321,9 +5321,51 @@ void WebPage::performDragControllerAction(std::optional<FrameIdentifier> frameID
     ASSERT_NOT_REACHED();
 }
 
-void WebPage::performDragOperation(WebCore::DragData&& dragData, SandboxExtension::Handle&& sandboxExtensionHandle, Vector<SandboxExtension::Handle>&& sandboxExtensionsHandleArray, CompletionHandler<void(bool)>&& completionHandler)
+static std::optional<WebCore::RemoteUserInputEventData> remoteEventDataForPosition(LocalFrame& frame, const IntPoint& position)
+{
+    auto locationInContentCoordinates = frame.view()->rootViewToContents(position);
+    auto hitTestResult = frame.eventHandler().hitTestResultAtPoint(locationInContentCoordinates, {
+             HitTestRequest::Type::ReadOnly,
+             HitTestRequest::Type::Active,
+             HitTestRequest::Type::DisallowUserAgentShadowContentExceptForImageOverlays,
+             HitTestRequest::Type::AllowChildFrameContent,
+         });
+    auto subframe = EventHandler::subframeForTargetNode(hitTestResult.protectedTargetNode().get());
+    if (auto* remoteFrame = dynamicDowncast<RemoteFrame>(subframe).get()) {
+         if (RefPtr remoteFrameView = remoteFrame->view()) {
+             return RemoteUserInputEventData {
+                 remoteFrame->frameID(),
+                 remoteFrameView->rootViewToContents(position)
+             };
+         }
+     }
+    return std::nullopt;
+}
+
+void WebPage::performDragOperation(std::optional<WebCore::FrameIdentifier> frameID, WebCore::DragData&& dragData, SandboxExtension::Handle&& sandboxExtensionHandle, Vector<SandboxExtension::Handle>&& sandboxExtensionsHandleArray, CompletionHandler<void(bool)>&& completionHandler)
 {
     ASSERT(!m_pendingDropSandboxExtension);
+
+    auto* frame = frameID ? WebProcess::singleton().webFrame(*frameID) : &mainWebFrame();
+    
+    if (!frame) {
+        ASSERT_NOT_REACHED();
+        return;
+    }
+
+    RefPtr localFrame = frame->coreLocalFrame();
+    if (!localFrame) {
+        ASSERT_NOT_REACHED();
+        return;
+    }
+
+    auto remoteUserInputEventData = remoteEventDataForPosition(*localFrame, dragData.clientPosition());
+    if (remoteUserInputEventData) {
+        sendWithAsyncReply(Messages::WebPageProxy::PerformDragOperationWithRemoteUserInputEventData(*remoteUserInputEventData, WTFMove(sandboxExtensionHandle), WTFMove(sandboxExtensionsHandleArray)), [completionHandler = WTFMove(completionHandler)] (bool handled) mutable {
+            completionHandler(handled);
+        });
+        return;
+    }
 
     m_pendingDropSandboxExtension = SandboxExtension::create(WTFMove(sandboxExtensionHandle));
     for (size_t i = 0; i < sandboxExtensionsHandleArray.size(); i++) {
