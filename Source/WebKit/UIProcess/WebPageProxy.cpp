@@ -3298,7 +3298,8 @@ void WebPageProxy::dragExited(DragData& dragData)
 
 void WebPageProxy::performDragOperationWithRemoteUserInputEventData(WebCore::RemoteUserInputEventData, SandboxExtensionHandle&&, Vector<SandboxExtensionHandle>&&, CompletionHandler<void(bool)>&&)
 {
-    
+    // do this per frame
+    //grantAccessToCurrentPasteboardData(dragStorageName);
 }
 
 void WebPageProxy::performDragOperation(DragData& dragData, const String& dragStorageName, SandboxExtension::Handle&& sandboxExtensionHandle, Vector<SandboxExtension::Handle>&& sandboxExtensionsForUpload, const std::optional<WebCore::FrameIdentifier>& frameID)
@@ -3313,7 +3314,7 @@ void WebPageProxy::performDragOperation(DragData& dragData, const String& dragSt
     if (!hasRunningProcess())
         return;
 
-    sendWithAsyncReply(Messages::WebPage::PerformDragOperation(dragData, WTFMove(sandboxExtensionHandle), WTFMove(sandboxExtensionsForUpload)), [this, protectedThis = Ref { *this }] (bool handled) {
+    sendWithAsyncReply(Messages::WebPage::PerformDragOperation(frameID, dragData, WTFMove(sandboxExtensionHandle), WTFMove(sandboxExtensionsForUpload)), [this, protectedThis = Ref { *this }] (bool handled) {
         protectedPageClient()->didPerformDragOperation(handled);
     });
 #endif
