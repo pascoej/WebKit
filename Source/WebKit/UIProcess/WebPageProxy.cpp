@@ -3314,7 +3314,9 @@ void WebPageProxy::performDragOperation(DragData& dragData, const String& dragSt
     if (!hasRunningProcess())
         return;
 
+    m_currentDragOperation = { dragData, dragStorageName };
     sendWithAsyncReply(Messages::WebPage::PerformDragOperation(frameID, dragData, WTFMove(sandboxExtensionHandle), WTFMove(sandboxExtensionsForUpload)), [this, protectedThis = Ref { *this }] (bool handled) {
+        m_currentDragOperation.reset();
         protectedPageClient()->didPerformDragOperation(handled);
     });
 #endif

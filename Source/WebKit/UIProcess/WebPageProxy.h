@@ -3511,6 +3511,12 @@ private:
         RefPtr<API::Object> messageBody;
     };
     Vector<InjectedBundleMessage> m_pendingInjectedBundleMessages;
+
+    struct DragOperationInfo {
+        DragData dragData;
+        String dragStorageName;
+    };
+    std::optional<DragOperationInfo> m_currentDragOperation;
         
 #if PLATFORM(IOS_FAMILY) && ENABLE(DEVICE_ORIENTATION)
     std::unique_ptr<WebDeviceOrientationUpdateProviderProxy> m_webDeviceOrientationUpdateProviderProxy;
