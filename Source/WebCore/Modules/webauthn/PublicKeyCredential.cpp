@@ -294,6 +294,24 @@ ExceptionOr<PublicKeyCredentialRequestOptions> PublicKeyCredential::parseRequest
     return options;
 }
 
+void PublicKeyCredential::signalUnknownCredential(Document& document, UnknownCredentialOptions&& options, DOMPromiseDeferred<void>&& promise)
+{
+    if (auto* page = document.page())
+        page->authenticatorCoordinator().signalUnknownCredential(document, WTFMove(options), WTFMove(promise));
+}
+
+void PublicKeyCredential::signalAllAcceptedCredentials(Document& document, AllAcceptedCredentialsOptions&& options, DOMPromiseDeferred<void>&& promise)
+{
+    if (auto* page = document.page())
+        page->authenticatorCoordinator().signalAllAcceptedCredentials(document, WTFMove(options), WTFMove(promise));
+}
+
+void PublicKeyCredential::signalCurrentUserDetails(Document& document, CurrentUserDetailsOptions&& options, DOMPromiseDeferred<void>&& promise)
+{
+    if (auto* page = document.page())
+        page->authenticatorCoordinator().signalCurrentUserDetails(document, WTFMove(options), WTFMove(promise));
+}
+
 } // namespace WebCore
 
 #endif // ENABLE(WEB_AUTHN)

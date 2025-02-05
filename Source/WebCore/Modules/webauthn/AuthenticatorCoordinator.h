@@ -28,6 +28,7 @@
 #if ENABLE(WEB_AUTHN)
 
 #include "IDLTypes.h"
+#include "PublicKeyCredential.h"
 #include <wtf/CompletionHandler.h>
 #include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>
@@ -60,7 +61,6 @@ struct PublicKeyCredentialRequestOptions;
 struct CredentialCreationOptions;
 struct CredentialRequestOptions;
 class SecurityOriginData;
-
 template<typename IDLType> class DOMPromiseDeferred;
 
 using CredentialPromise = DOMPromiseDeferred<IDLNullable<IDLInterface<BasicCredential>>>;
@@ -80,6 +80,10 @@ public:
     void isConditionalMediationAvailable(const Document&, DOMPromiseDeferred<IDLBoolean>&&) const;
 
     void getClientCapabilities(const Document&, DOMPromiseDeferred<PublicKeyCredentialClientCapabilities>&&) const;
+
+    void signalUnknownCredential(const Document&, PublicKeyCredential::UnknownCredentialOptions&&, DOMPromiseDeferred<void>&&);
+    void signalAllAcceptedCredentials(const Document&, PublicKeyCredential::AllAcceptedCredentialsOptions&&, DOMPromiseDeferred<void>&&);
+    void signalCurrentUserDetails(const Document&, PublicKeyCredential::CurrentUserDetailsOptions&&, DOMPromiseDeferred<void>&&);
 
 private:
     AuthenticatorCoordinator() = default;
