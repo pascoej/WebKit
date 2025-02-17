@@ -50,7 +50,7 @@ public:
     AuthenticatorGetInfoResponse& operator=(AuthenticatorGetInfoResponse&& other) = default;
 
     AuthenticatorGetInfoResponse& setMaxMsgSize(uint32_t);
-    AuthenticatorGetInfoResponse& setPinProtocols(Vector<uint8_t>&&);
+    AuthenticatorGetInfoResponse& setPinProtocols(Vector<PinUVAuthProtocol>&&);
     AuthenticatorGetInfoResponse& setExtensions(Vector<String>&&);
     AuthenticatorGetInfoResponse& setOptions(AuthenticatorSupportedOptions&&);
     AuthenticatorGetInfoResponse& setTransports(Vector<WebCore::AuthenticatorTransport>&&);
@@ -61,7 +61,7 @@ public:
     const StdSet<ProtocolVersion>& versions() const { return m_versions; }
     const Vector<uint8_t>& aaguid() const { return m_aaguid; }
     const std::optional<uint32_t>& maxMsgSize() const { return m_maxMsgSize; }
-    const std::optional<Vector<uint8_t>>& pinProtocol() const { return m_pinProtocols; }
+    const std::optional<Vector<PinUVAuthProtocol>>& pinProtocol() const { return m_pinProtocols; }
     const std::optional<Vector<String>>& extensions() const { return m_extensions; }
     const AuthenticatorSupportedOptions& options() const { return m_options; }
     AuthenticatorSupportedOptions& mutableOptions() { return m_options; }

@@ -193,6 +193,19 @@ private:
     Ref<WebCore::CryptoKeyHMAC> m_token;
 };
 
+struct EncapsulateResponse {
+    Vector<uint8_t> coseKey;
+    Vector<uint8_t> sharedSecret;
+};
+
+RefPtr<CryptoKeyAES> aesKeyFromSharedSecret(Vector<uint8_t> sharedSecret);
+RefPtr<CryptoKeyHMAC> hmacKeyFromSharedSecret(Vector<uint8_t> sharedSecret);
+
+WEBCORE_EXPORT EncapsulateResponse encapsulate(PinUVAuthProtocol, const CryptoKeyEC& peerKey);
+WEBCORE_EXPORT Vector<uint8_t> encrypt(PinUVAuthProtocol, const Vector<uint8_t>& sharedKey);
+WEBCORE_EXPORT Vector<uint8_t> decrypt(PinUVAuthProtocol, const Vector<uint8_t>& sharedKey);
+WEBCORE_EXPORT Vector<uint8_t> authenticate(PinUVAuthProtocol, const Vector<uint8_t>& key, const Vector<uint8_t> data);
+
 WEBCORE_EXPORT Vector<uint8_t> encodeAsCBOR(const RetriesRequest&);
 WEBCORE_EXPORT Vector<uint8_t> encodeAsCBOR(const KeyAgreementRequest&);
 WEBCORE_EXPORT Vector<uint8_t> encodeAsCBOR(const TokenRequest&);

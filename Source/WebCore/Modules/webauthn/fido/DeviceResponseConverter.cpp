@@ -316,7 +316,7 @@ std::optional<AuthenticatorGetInfoResponse> readCTAPGetInfoResponse(const Vector
         if (!it->second.isArray())
             return std::nullopt;
 
-        Vector<uint8_t> supportedPinProtocols;
+        Vector<PinUVAuthProtocol> supportedPinProtocols;
         for (const auto& protocol : it->second.getArray()) {
             if (!protocol.isUnsigned())
                 return std::nullopt;

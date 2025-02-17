@@ -43,7 +43,7 @@ struct PublicKeyCredentialRequestOptions;
 namespace fido {
 
 struct PinParameters {
-    int protocol;
+    PinUVAuthProtocol protocol;
     Vector<uint8_t> auth;
 };
 

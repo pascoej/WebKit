@@ -37,6 +37,7 @@ public:
     static constexpr ASCIILiteral s_name = "HKDF"_s;
     static constexpr CryptoAlgorithmIdentifier s_identifier = CryptoAlgorithmIdentifier::HKDF;
     static Ref<CryptoAlgorithm> create();
+    static hkdf(Vector<uint8_t> key, const String&);
 
 private:
     CryptoAlgorithmHKDF() = default;

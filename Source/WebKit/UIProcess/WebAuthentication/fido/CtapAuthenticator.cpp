@@ -93,6 +93,9 @@ CtapAuthenticator::CtapAuthenticator(Ref<CtapDriver>&& driver, AuthenticatorGetI
     : FidoAuthenticator(WTFMove(driver))
     , m_info(WTFMove(info))
 {
+    m_pinProtocolToUse = PinUVAuthProtocol::kPinProtocol1;
+    if (m_info.pinProtocols().contains(PinUVAuthProtocol::kPinProtocol2))
+        m_pinProtocolToUse = PinUVAuthProtocol::kPinProtocol2;
 }
 
 void CtapAuthenticator::makeCredential()

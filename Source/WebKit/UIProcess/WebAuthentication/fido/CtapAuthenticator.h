@@ -81,6 +81,7 @@ private:
     bool m_isDowngraded { false };
     bool m_isKeyStoreFull { false };
     size_t m_remainingAssertionResponses { 0 };
+    PinUVAuthProtocol m_pinProtocolToUse;
     Vector<Ref<WebCore::AuthenticatorAssertionResponse>> m_assertionResponses;
     Vector<uint8_t> m_pinAuth;
 };

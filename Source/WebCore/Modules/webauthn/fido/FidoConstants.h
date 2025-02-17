@@ -133,6 +133,11 @@ enum class FidoHidDeviceCommand : uint8_t {
 
 bool isFidoHidDeviceCommand(FidoHidDeviceCommand);
 
+enum class PinUVAuthProtocol : uint8_t {
+    kPinProtocol1 = 1,
+    kPinProtocol2 = 2,
+};
+
 // Parameters for fake U2F registration used to check for user presence.
 constexpr std::array<uint8_t, 32> kBogusAppParam {
     0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,
@@ -287,6 +292,9 @@ constexpr int64_t kCtapGetAssertionExtensionsKey = 4;
 constexpr int64_t kCtapGetAssertionRequestOptionsKey = 5;
 constexpr int64_t kCtapGetAssertionPinUvAuthParamKey = 6;
 constexpr int64_t kCtapGetAssertionPinUvAuthProtocolKey = 7;
+
+constexpr size_t kAESKeyLength = 32;
+constexpr size_t kHMACKeyLength = 32;
 
 } // namespace fido
 

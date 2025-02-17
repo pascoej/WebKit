@@ -86,6 +86,11 @@ inline BufferSource toBufferSource(std::span<const uint8_t> data)
     return BufferSource(JSC::ArrayBuffer::tryCreate(data));
 }
 
+inline BufferSource toBufferSource(const String& data)
+{
+    return toBufferSource(data.utf8().span());
+}
+
 #if PLATFORM(COCOA) && defined(__OBJC__)
 inline BufferSource toBufferSource(NSData *data)
 {

@@ -39,6 +39,14 @@ Ref<CryptoAlgorithm> CryptoAlgorithmHKDF::create()
     return adoptRef(*new CryptoAlgorithmHKDF);
 }
 
+static CryptoAlgorithmHKDF::hkdf(Vector<uint8_t> key, const String&)
+{
+    CryptoKeyRaw::
+    CryptoAlgorithmHkdfParams params;
+    return platformDeriveBits()
+}
+
+
 CryptoAlgorithmIdentifier CryptoAlgorithmHKDF::identifier() const
 {
     return s_identifier;
