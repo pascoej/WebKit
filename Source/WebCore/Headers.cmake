@@ -662,6 +662,10 @@ set(WebCore_PRIVATE_FRAMEWORK_HEADERS
     Modules/webauthn/fido/U2fCommandConstructor.h
     Modules/webauthn/fido/U2fResponseConverter.h
 
+    Modules/webauthn/fido/UnknownCredentialOptions.h
+    Modules/webauthn/fido/AllAcceptedCredentialsOptions.h
+    Modules/webauthn/fido/CurrentUserDetailsOptions.h
+
     Modules/webcodecs/VideoColorSpaceInit.h
     Modules/webcodecs/WebCodecsAlphaOption.h
     Modules/webcodecs/WebCodecsAudioData.h

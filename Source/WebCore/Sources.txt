@@ -3496,6 +3496,7 @@ JSAnimationFrameRatePreset.cpp
 JSAnimationPlaybackEvent.cpp
 JSAnimationPlaybackEventInit.cpp
 JSAnimationTimeline.cpp
+JSAllAcceptedCredentialsOptions.cpp
 JSAttestationConveyancePreference.cpp
 JSAttr.cpp
 JSAudioBuffer.cpp
@@ -3707,6 +3708,7 @@ JSCustomEffectCallback.cpp
 JSCustomElementRegistry.cpp
 JSCustomEvent.cpp
 JSCustomStateSet.cpp
+JSCurrentUserDetailsOptions.cpp
 JSDOMApplicationCache.cpp
 JSDOMAudioSession.cpp
 JSDOMCSSCustomPropertyDescriptor.cpp
@@ -4777,6 +4779,7 @@ JSURLSearchParams.cpp
 JSUserActivation.cpp
 JSUndoItem.cpp
 JSUndoManager.cpp
+JSUnknownCredentialOptions.cpp
 JSUserMessageHandler.cpp
 JSUserMessageHandlersNamespace.cpp
 JSUserVerificationRequirement.cpp

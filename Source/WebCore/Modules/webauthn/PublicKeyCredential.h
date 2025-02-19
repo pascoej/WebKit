@@ -47,30 +47,14 @@ struct PublicKeyCredentialCreationOptionsJSON;
 struct PublicKeyCredentialRequestOptions;
 struct PublicKeyCredentialRequestOptionsJSON;
 struct AuthenticationExtensionsClientOutputs;
+struct UnknownCredentialOptions;
+struct AllAcceptedCredentialsOptions;
+struct CurrentUserDetailsOptions;
 
 template<typename IDLType> class DOMPromiseDeferred;
 
 class PublicKeyCredential final : public BasicCredential {
 public:
-    struct UnknownCredentialOptions {
-        String rpId;
-        String credentialId;
-    };
-
-
-    struct AllAcceptedCredentialsOptions {
-        String rpId;
-        String userId;
-        Vector<String> allAcceptedCredentialIds;
-    };
-
-    struct CurrentUserDetailsOptions {
-        String rpId;
-        String userId;
-        String name;
-        String displayName;
-    };
-
     static Ref<PublicKeyCredential> create(Ref<AuthenticatorResponse>&&);
 
     ArrayBuffer* rawId() const;

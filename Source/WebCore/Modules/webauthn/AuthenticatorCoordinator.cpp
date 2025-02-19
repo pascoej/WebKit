@@ -424,7 +424,7 @@ void AuthenticatorCoordinator::getClientCapabilities(const Document& document, D
     m_client->getClientCapabilities(document.securityOrigin(), WTFMove(completionHandler));
 }
 
-void AuthenticatorCoordinator::signalUnknownCredential(const Document& document, PublicKeyCredential::UnknownCredentialOptions&& options, DOMPromiseDeferred<void>&& promise)
+void AuthenticatorCoordinator::signalUnknownCredential(const Document& document, UnknownCredentialOptions&& options, DOMPromiseDeferred<void>&& promise)
 {
     if (!m_client)  {
         promise.reject(Exception { ExceptionCode::UnknownError, "Unknown internal error."_s });
@@ -436,7 +436,7 @@ void AuthenticatorCoordinator::signalUnknownCredential(const Document& document,
     m_client->signalUnknownCredential(document.securityOrigin(), WTFMove(options), WTFMove(completionHandler));
 }
 
-void AuthenticatorCoordinator::signalAllAcceptedCredentials(const Document& document, PublicKeyCredential::AllAcceptedCredentialsOptions&& options, DOMPromiseDeferred<void>&& promise)
+void AuthenticatorCoordinator::signalAllAcceptedCredentials(const Document& document, AllAcceptedCredentialsOptions&& options, DOMPromiseDeferred<void>&& promise)
 {
     if (!m_client)  {
         promise.reject(Exception { ExceptionCode::UnknownError, "Unknown internal error."_s });
@@ -448,7 +448,7 @@ void AuthenticatorCoordinator::signalAllAcceptedCredentials(const Document& docu
     m_client->signalAllAcceptedCredentials(document.securityOrigin(), WTFMove(options), WTFMove(completionHandler));
 }
 
-void AuthenticatorCoordinator::signalCurrentUserDetails(const Document& document, PublicKeyCredential::CurrentUserDetailsOptions&& options, DOMPromiseDeferred<void>&& promise)
+void AuthenticatorCoordinator::signalCurrentUserDetails(const Document& document, CurrentUserDetailsOptions&& options, DOMPromiseDeferred<void>&& promise)
 {
     if (!m_client)  {
         promise.reject(Exception { ExceptionCode::UnknownError, "Unknown internal error."_s });

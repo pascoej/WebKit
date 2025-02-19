@@ -1280,6 +1280,21 @@ void WebAuthenticatorCoordinatorProxy::cancel(CompletionHandler<void()>&& handle
         [m_controller cancel];
 #endif
 }
+            
+void WebAuthenticatorCoordinatorProxy::signalUnknownCredential(const WebCore::SecurityOriginData&, WebCore::UnknownCredentialOptions&&, CompletionHandler<void()>&&)
+{
+    
+}
+            
+void WebAuthenticatorCoordinatorProxy::signalAllAcceptedCredentials(const WebCore::SecurityOriginData&, WebCore::AllAcceptedCredentialsOptions&&, CompletionHandler<void()>&&)
+{
+    
+}
+            
+void WebAuthenticatorCoordinatorProxy::signalCurrentUserDetails(const WebCore::SecurityOriginData&, WebCore::CurrentUserDetailsOptions&&, CompletionHandler<void()>&&)
+{
+
+}
 
 } // namespace WebKit
 

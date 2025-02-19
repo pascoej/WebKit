@@ -81,9 +81,9 @@ public:
 
     void getClientCapabilities(const Document&, DOMPromiseDeferred<PublicKeyCredentialClientCapabilities>&&) const;
 
-    void signalUnknownCredential(const Document&, PublicKeyCredential::UnknownCredentialOptions&&, DOMPromiseDeferred<void>&&);
-    void signalAllAcceptedCredentials(const Document&, PublicKeyCredential::AllAcceptedCredentialsOptions&&, DOMPromiseDeferred<void>&&);
-    void signalCurrentUserDetails(const Document&, PublicKeyCredential::CurrentUserDetailsOptions&&, DOMPromiseDeferred<void>&&);
+    void signalUnknownCredential(const Document&, UnknownCredentialOptions&&, DOMPromiseDeferred<void>&&);
+    void signalAllAcceptedCredentials(const Document&, AllAcceptedCredentialsOptions&&, DOMPromiseDeferred<void>&&);
+    void signalCurrentUserDetails(const Document&, CurrentUserDetailsOptions&&, DOMPromiseDeferred<void>&&);
 
 private:
     AuthenticatorCoordinator() = default;

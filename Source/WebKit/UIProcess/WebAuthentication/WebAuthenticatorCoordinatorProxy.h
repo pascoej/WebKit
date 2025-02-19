@@ -115,9 +115,9 @@ private:
     void isConditionalMediationAvailable(const WebCore::SecurityOriginData&, QueryCompletionHandler&&);
     void getClientCapabilities(const WebCore::SecurityOriginData&, CapabilitiesCompletionHandler&&);
     
-    void signalUnknownCredential(const WebCore::SecurityOriginData&, WebCore::PublicKeyCredential::UnknownCredentialOptions&&, CompletionHandler<void()>&&);
-    void signalAllAcceptedCredentials(const WebCore::SecurityOriginData&, WebCore::PublicKeyCredential::AllAcceptedCredentialsOptions&&, CompletionHandler<void()>&&);
-    void signalCurrentUserDetails(const WebCore::SecurityOriginData&, WebCore::PublicKeyCredential::CurrentUserDetailsOptions&&, CompletionHandler<void()>&&);
+    void signalUnknownCredential(const WebCore::SecurityOriginData&, WebCore::UnknownCredentialOptions&&, CompletionHandler<void()>&&);
+    void signalAllAcceptedCredentials(const WebCore::SecurityOriginData&, WebCore::AllAcceptedCredentialsOptions&&, CompletionHandler<void()>&&);
+    void signalCurrentUserDetails(const WebCore::SecurityOriginData&, WebCore::CurrentUserDetailsOptions&&, CompletionHandler<void()>&&);
     
     void cancel(CompletionHandler<void()>&&);
 

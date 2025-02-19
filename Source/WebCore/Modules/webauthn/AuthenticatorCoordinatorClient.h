@@ -76,9 +76,9 @@ public:
     virtual void isConditionalMediationAvailable(const SecurityOrigin&, QueryCompletionHandler&&) = 0;
     virtual void isUserVerifyingPlatformAuthenticatorAvailable(const SecurityOrigin&, QueryCompletionHandler&&) = 0;
     virtual void getClientCapabilities(const SecurityOrigin&, CapabilitiesCompletionHandler&&) = 0;
-    virtual void signalUnknownCredential(const SecurityOrigin&, PublicKeyCredential::UnknownCredentialOptions&&, CompletionHandler<void()>&&) = 0;
-    virtual void signalAllAcceptedCredentials(const SecurityOrigin&, PublicKeyCredential::AllAcceptedCredentialsOptions&&, CompletionHandler<void()>&&) = 0;
-    virtual void signalCurrentUserDetails(const SecurityOrigin&, PublicKeyCredential::CurrentUserDetailsOptions&&, CompletionHandler<void()>&&) = 0;
+    virtual void signalUnknownCredential(const SecurityOrigin&, UnknownCredentialOptions&&, CompletionHandler<void()>&&) = 0;
+    virtual void signalAllAcceptedCredentials(const SecurityOrigin&, AllAcceptedCredentialsOptions&&, CompletionHandler<void()>&&) = 0;
+    virtual void signalCurrentUserDetails(const SecurityOrigin&, CurrentUserDetailsOptions&&, CompletionHandler<void()>&&) = 0;
     virtual void cancel(CompletionHandler<void()>&&) = 0;
 };
 

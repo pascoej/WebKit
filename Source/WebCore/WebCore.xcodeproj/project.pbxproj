@@ -4514,6 +4514,9 @@
 		ADDF1AD71257CD9A0003A759 /* LegacyRenderSVGPath.h in Headers */ = {isa = PBXBuildFile; fileRef = ADDF1AD51257CD9A0003A759 /* LegacyRenderSVGPath.h */; };
 		ADEC78F818EE5308001315C2 /* JSElementCustom.h in Headers */ = {isa = PBXBuildFile; fileRef = ADEC78F718EE5308001315C2 /* JSElementCustom.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		AE5BDBDD2CA481C600550C8C /* CredentialPropertiesOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = AE5BDBDC2CA481C600550C8C /* CredentialPropertiesOutput.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		AEBAFFAD2D65D459008311A5 /* UnknownCredentialOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = AEBAFFAC2D65D459008311A5 /* UnknownCredentialOptions.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		AEBAFFB02D65D478008311A5 /* AllAcceptedCredentialsOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = AEBAFFAF2D65D478008311A5 /* AllAcceptedCredentialsOptions.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		AEBAFFB52D65D537008311A5 /* CurrentUserDetailsOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = AEBAFFB42D65D537008311A5 /* CurrentUserDetailsOptions.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		AED243472C8BC27700E8649D /* PublicKeyCredentialCreationOptionsJSON.h in Headers */ = {isa = PBXBuildFile; fileRef = AED243462C8BC26000E8649D /* PublicKeyCredentialCreationOptionsJSON.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		AED2434A2C8BCCD600E8649D /* AuthenticatorSelectionCriteria.h in Headers */ = {isa = PBXBuildFile; fileRef = AED243492C8BC80100E8649D /* AuthenticatorSelectionCriteria.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		AED2434D2C8F905700E8649D /* PublicKeyCredentialEntity.h in Headers */ = {isa = PBXBuildFile; fileRef = AED2434C2C8F905700E8649D /* PublicKeyCredentialEntity.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -17080,6 +17083,12 @@
 		ADFE2B541BD5F41200DAB457 /* ResourceUsageOverlayCocoa.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ResourceUsageOverlayCocoa.mm; sourceTree = "<group>"; };
 		AE5BDBDB2CA4817400550C8C /* CredentialPropertiesOutput.idl */ = {isa = PBXFileReference; lastKnownFileType = text; path = CredentialPropertiesOutput.idl; sourceTree = "<group>"; };
 		AE5BDBDC2CA481C600550C8C /* CredentialPropertiesOutput.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CredentialPropertiesOutput.h; sourceTree = "<group>"; };
+		AEBAFFAC2D65D459008311A5 /* UnknownCredentialOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UnknownCredentialOptions.h; sourceTree = "<group>"; };
+		AEBAFFAE2D65D462008311A5 /* UnknownCredentialOptions.idl */ = {isa = PBXFileReference; lastKnownFileType = text; path = UnknownCredentialOptions.idl; sourceTree = "<group>"; };
+		AEBAFFAF2D65D478008311A5 /* AllAcceptedCredentialsOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AllAcceptedCredentialsOptions.h; sourceTree = "<group>"; };
+		AEBAFFB22D65D4E8008311A5 /* AllAcceptedCredentialsOptions.idl */ = {isa = PBXFileReference; lastKnownFileType = text; path = AllAcceptedCredentialsOptions.idl; sourceTree = "<group>"; };
+		AEBAFFB32D65D51D008311A5 /* CurrentUserDetailsOptions.idl */ = {isa = PBXFileReference; lastKnownFileType = text; path = CurrentUserDetailsOptions.idl; sourceTree = "<group>"; };
+		AEBAFFB42D65D537008311A5 /* CurrentUserDetailsOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CurrentUserDetailsOptions.h; sourceTree = "<group>"; };
 		AED243452C8BBA5E00E8649D /* PublicKeyCredentialCreationOptionsJSON.idl */ = {isa = PBXFileReference; lastKnownFileType = text; path = PublicKeyCredentialCreationOptionsJSON.idl; sourceTree = "<group>"; };
 		AED243462C8BC26000E8649D /* PublicKeyCredentialCreationOptionsJSON.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PublicKeyCredentialCreationOptionsJSON.h; sourceTree = "<group>"; };
 		AED243482C8BC7FC00E8649D /* AuthenticatorSelectionCriteria.idl */ = {isa = PBXFileReference; lastKnownFileType = text; path = AuthenticatorSelectionCriteria.idl; sourceTree = "<group>"; };
@@ -27504,6 +27513,8 @@
 				57152B5321CB2CE3000C37CA /* apdu */,
 				57303BB32006C6ED00355965 /* cbor */,
 				578A4BFA2166AE0000D08F34 /* fido */,
+				AEBAFFAF2D65D478008311A5 /* AllAcceptedCredentialsOptions.h */,
+				AEBAFFB22D65D4E8008311A5 /* AllAcceptedCredentialsOptions.idl */,
 				57D135212294973400827401 /* AttestationConveyancePreference.h */,
 				57D135232294973400827401 /* AttestationConveyancePreference.idl */,
 				52B07440284680C900511B65 /* AuthenticationExtensionsClientInputs.cpp */,
@@ -27539,6 +27550,8 @@
 				57DCED8E21487EDB0016B847 /* AuthenticatorTransport.idl */,
 				AE5BDBDC2CA481C600550C8C /* CredentialPropertiesOutput.h */,
 				AE5BDBDB2CA4817400550C8C /* CredentialPropertiesOutput.idl */,
+				AEBAFFB42D65D537008311A5 /* CurrentUserDetailsOptions.h */,
+				AEBAFFB32D65D51D008311A5 /* CurrentUserDetailsOptions.idl */,
 				57D8462C1FEAF68F00CA3682 /* PublicKeyCredential.cpp */,
 				57D8462B1FEAF68F00CA3682 /* PublicKeyCredential.h */,
 				57D8462D1FEAF68F00CA3682 /* PublicKeyCredential.idl */,
@@ -27570,6 +27583,8 @@
 				AED2436A2C939AB600E8649D /* RegistrationResponseJSON.idl */,
 				52688AA327D6A7DA003577A2 /* ResidentKeyRequirement.h */,
 				52688AA527D6A7DA003577A2 /* ResidentKeyRequirement.idl */,
+				AEBAFFAC2D65D459008311A5 /* UnknownCredentialOptions.h */,
+				AEBAFFAE2D65D462008311A5 /* UnknownCredentialOptions.idl */,
 				572B402321768D85000AD43E /* UserVerificationRequirement.h */,
 				572B402521768D85000AD43E /* UserVerificationRequirement.idl */,
 				574F55DC204F3732002948C6 /* WebAuthenticationConstants.h */,
@@ -39821,6 +39836,7 @@
 				D2BB5C65290985E40065457D /* AdvancedPrivacyProtections.h in Headers */,
 				84D0C4061115F1EA0018AA34 /* AffineTransform.h in Headers */,
 				C1F7B7322448F2AC00124557 /* AGXCompilerService.h in Headers */,
+				AEBAFFB02D65D478008311A5 /* AllAcceptedCredentialsOptions.h in Headers */,
 				83BB5C881D5D6F45005A71F4 /* AllDescendantsCollection.h in Headers */,
 				3AD4AB8C2C3CADF700A3E7F3 /* Allowlist.h in Headers */,
 				7299BC6723D6A53200CC6883 /* AlphaPremultiplication.h in Headers */,
@@ -40747,6 +40763,7 @@
 				A79CF86F2C59D09F00F67C7A /* CSSViewTransitionRule.h in Headers */,
 				71ED24B62B1E345300B3EFAB /* CSSViewValue.h in Headers */,
 				BCB272192CC1F21B00265123 /* CSSXywhFunction.h in Headers */,
+				AEBAFFB52D65D537008311A5 /* CurrentUserDetailsOptions.h in Headers */,
 				93F1992F08245E59001E9ABC /* Cursor.h in Headers */,
 				BC2272A20E82E87C00E7F975 /* CursorData.h in Headers */,
 				BC2272AD0E82E8F300E7F975 /* CursorList.h in Headers */,
@@ -44879,6 +44896,7 @@
 				5198F7A91BBDD38500E2CC5F /* UniqueIDBDatabaseTransaction.h in Headers */,
 				E4AFCFA50DAF29A300F5F55C /* UnitBezier.h in Headers */,
 				C18CC0A42580EFB1003D75FB /* UniversalAccessZoom.h in Headers */,
+				AEBAFFAD2D65D459008311A5 /* UnknownCredentialOptions.h in Headers */,
 				D086FE9809D53AAB005BC74D /* UnlinkCommand.h in Headers */,
 				467302021C4EFE7800BCB357 /* UnloadCountIncrementer.h in Headers */,
 				FD1762E0176686D900D836A8 /* UpSampler.h in Headers */,
