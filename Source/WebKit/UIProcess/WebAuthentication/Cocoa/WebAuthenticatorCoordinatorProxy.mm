@@ -58,6 +58,14 @@
 #if HAVE(WEB_AUTHN_AS_MODERN)
 #import "AuthenticationServicesSoftLink.h"
 
+#if USE(APPLE_INTERNAL_SDK)
+#import <WebKitAdditions/LocalAuthenticatorAdditions.h>
+#else
+#define SIGNAL_UNKNOWN_CREDENTIAL_ADDITIONS completionHandler();
+#define SIGNAL_ALL_ACCEPTED_CREDENTIALS_ADDITIONS completionHandler();
+#define SIGNAL_CURRENT_USER_DETAILS completionHandler();
+#endif
+
 @interface _WKASDelegate : NSObject {
     RetainPtr<WKWebView> m_view;
     BlockPtr<void(ASAuthorization *, NSError *)> m_completionHandler;
@@ -1283,17 +1291,17 @@ void WebAuthenticatorCoordinatorProxy::cancel(CompletionHandler<void()>&& handle
             
 void WebAuthenticatorCoordinatorProxy::signalUnknownCredential(const WebCore::SecurityOriginData&, WebCore::UnknownCredentialOptions&&, CompletionHandler<void()>&&)
 {
-    
+    SIGNAL_UNKNOWN_CREDENTIAL_ADDITIONS
 }
             
 void WebAuthenticatorCoordinatorProxy::signalAllAcceptedCredentials(const WebCore::SecurityOriginData&, WebCore::AllAcceptedCredentialsOptions&&, CompletionHandler<void()>&&)
 {
-    
+    SIGNAL_ALL_ACCEPTED_CREDENTIALS_ADDITIONS
 }
             
 void WebAuthenticatorCoordinatorProxy::signalCurrentUserDetails(const WebCore::SecurityOriginData&, WebCore::CurrentUserDetailsOptions&&, CompletionHandler<void()>&&)
 {
-
+    SIGNAL_CURRENT_USER_DETAILS
 }
 
 } // namespace WebKit

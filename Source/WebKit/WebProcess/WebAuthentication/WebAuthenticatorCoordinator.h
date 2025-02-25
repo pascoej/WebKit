@@ -48,9 +48,9 @@ private:
     void isConditionalMediationAvailable(const WebCore::SecurityOrigin&, WebCore::QueryCompletionHandler&&) final;
     void isUserVerifyingPlatformAuthenticatorAvailable(const WebCore::SecurityOrigin&, WebCore::QueryCompletionHandler&&) final;
     void getClientCapabilities(const WebCore::SecurityOrigin&, WebCore::CapabilitiesCompletionHandler&&) final;
-    void signalUnknownCredential(const SecurityOrigin&, UnknownCredentialOptions&&, CompletionHandler<void()>&&) final;
-    void signalAllAcceptedCredentials(const SecurityOrigin&, AllAcceptedCredentialsOptions&&, CompletionHandler<void()>&&) final;
-    void signalCurrentUserDetails(const SecurityOrigin&, CurrentUserDetailsOptions&&, CompletionHandler<void()>&&) final;
+    void signalUnknownCredential(const WebCore::SecurityOrigin&, WebCore::UnknownCredentialOptions&&, CompletionHandler<void()>&&) final;
+    void signalAllAcceptedCredentials(const WebCore::SecurityOrigin&, WebCore::AllAcceptedCredentialsOptions&&, CompletionHandler<void()>&&) final;
+    void signalCurrentUserDetails(const WebCore::SecurityOrigin&, WebCore::CurrentUserDetailsOptions&&, CompletionHandler<void()>&&) final;
     void cancel(CompletionHandler<void()>&&) final;
 
     Ref<WebPage> protectedPage() const;
