@@ -351,11 +351,14 @@ inline WKEventMouseButton toAPI(WebMouseEventButton mouseButton)
         wkMouseButton = kWKEventMouseButtonLeftButton;
         break;
     case WebMouseEventButton::Middle:
-        wkMouseButton = kWKEventMouseButtonMiddleButton;
+    case WebMouseEventButton::Mouse4:
+    case WebMouseEventButton::Mouse5:
+wkMouseButton = kWKEventMouseButtonMiddleButton;
         break;
     case WebMouseEventButton::Right:
         wkMouseButton = kWKEventMouseButtonRightButton;
         break;
+
     }
 
     return wkMouseButton;

@@ -152,6 +152,8 @@ class WebKit::WebTouchEvent : WebKit::WebEvent {
     Left,
     Middle,
     Right,
+    Mouse4,
+    Mouse5,
     None
 };
 

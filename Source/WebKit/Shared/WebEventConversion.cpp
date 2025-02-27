@@ -107,6 +107,10 @@ public:
         case WebMouseEventButton::Right:
             m_button = WebCore::MouseButton::Right;
             break;
+        case WebMouseEventButton::Mouse4:
+        case WebMouseEventButton::Mouse5:
+            m_button = WebCore::MouseButton::Other;
+            break;
         default:
             RELEASE_ASSERT_NOT_REACHED();
         }

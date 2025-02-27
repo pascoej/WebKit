@@ -215,6 +215,8 @@ void WebAutomationSession::platformSimulateMouseInteraction(WebPageProxy& page, 
         dragEventType = NSEventTypeLeftMouseDragged;
         upEventType = NSEventTypeLeftMouseUp;
         break;
+    case WebMouseEventButton::Mouse4:
+    case WebMouseEventButton::Mouse5:
     case WebMouseEventButton::Middle:
         downEventType = NSEventTypeOtherMouseDown;
         dragEventType = NSEventTypeLeftMouseDragged;

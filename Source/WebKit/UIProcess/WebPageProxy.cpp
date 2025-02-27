@@ -10595,6 +10595,7 @@ void WebPageProxy::mouseEventHandlingCompleted(std::optional<WebEventType> event
         sendMouseEvent(remoteUserInputEventData->targetFrameID, event, { });
         return;
     }
+    WTFLogAlways("mouseventhadleing");
 
     // Retire the last sent event now that WebProcess is done handling it.
     MESSAGE_CHECK(m_legacyMainFrameProcess, !internals().mouseEventQueue.isEmpty());
@@ -10612,6 +10613,10 @@ void WebPageProxy::mouseEventHandlingCompleted(std::optional<WebEventType> event
             processContextMenuCallbacks();
         }
 #endif
+        if (event.button() == WebMouseEventButton::Mouse4)
+            goBack();
+        if (event.button() == WebMouseEventButton::Mouse5)
+            goForward();
     }
 
     if (!internals().mouseEventQueue.isEmpty()) {

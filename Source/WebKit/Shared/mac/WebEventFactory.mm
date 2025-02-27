@@ -61,6 +61,7 @@ static WebMouseEventButton currentMouseButton()
 
 static WebMouseEventButton mouseButtonForEvent(NSEvent *event)
 {
+    WTFLogAlways("buttonnmber %d", (int)event.buttonNumber);
     switch ([event type]) {
     case NSEventTypeLeftMouseDown:
     case NSEventTypeLeftMouseUp:
@@ -73,6 +74,10 @@ static WebMouseEventButton mouseButtonForEvent(NSEvent *event)
     case NSEventTypeOtherMouseDown:
     case NSEventTypeOtherMouseUp:
     case NSEventTypeOtherMouseDragged:
+        if (event.buttonNumber == 3)
+            return WebMouseEventButton::Mouse4;
+        if (event.buttonNumber == 4)
+            return WebMouseEventButton::Mouse5;
         return WebMouseEventButton::Middle;
     case NSEventTypePressure:
     case NSEventTypeMouseEntered:
@@ -516,6 +521,8 @@ NSInteger WebEventFactory::toNSButtonNumber(WebKit::WebMouseEventButton mouseBut
         return 1 << 0;
     case WebKit::WebMouseEventButton::Right:
         return 1 << 1;
+    case WebKit::WebMouseEventButton::Mouse4:
+    case WebKit::WebMouseEventButton::Mouse5:
     case WebKit::WebMouseEventButton::Middle:
         return 1 << 2;
     }
