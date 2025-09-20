@@ -230,7 +230,10 @@ void MockHidConnection::feedReports()
             AuthenticatorGetInfoResponse infoResponse({ ProtocolVersion::kCtap2 }, Vector<uint8_t>(aaguidLength, 0u));
             AuthenticatorSupportedOptions options;
             if (m_configuration.hid->supportClientPin) {
-                infoResponse.setPinProtocols({ pin::kProtocolVersion });
+                if (!m_configuration.hid->pinProtocols.isEmpty())
+                    infoResponse.setPinProtocols(Vector<uint8_t>(m_configuration.hid->pinProtocols));
+                else
+                    infoResponse.setPinProtocols({ static_cast<uint8_t>(PINUVAuthProtocol::kPinProtocol1) });
                 options.setClientPinAvailability(AuthenticatorSupportedOptions::ClientPinAvailability::kSupportedAndPinSet);
             }
             if (m_configuration.hid->supportInternalUV)
@@ -335,6 +338,8 @@ void MockHidConnection::initializeExpectedCommands()
 
 void MockHidConnection::validateExpectedCommand(const Vector<uint8_t>& actualCommand)
 {
+    RELEASE_LOG(WebAuthn, "MockHidConnection: Validating command %zu of %zu", m_currentExpectedCommandIndex + 1, m_expectedCommands.size());
+
     if (m_currentExpectedCommandIndex >= m_expectedCommands.size()) {
         RELEASE_LOG_ERROR(WebAuthn, "MockHidConnection: VALIDATION FAILED - Received unexpected command beyond expected count. Expected %zu commands, but received command %zu. Content: %s", m_expectedCommands.size(), m_currentExpectedCommandIndex + 1, base64EncodeToString(actualCommand).utf8().data());
         RELEASE_ASSERT_NOT_REACHED_WITH_MESSAGE("MockHidConnection: Unexpected command.");
@@ -342,7 +347,9 @@ void MockHidConnection::validateExpectedCommand(const Vector<uint8_t>& actualCom
 
     const auto& expectedCommand = m_expectedCommands[m_currentExpectedCommandIndex];
     if (actualCommand != expectedCommand) {
-        RELEASE_LOG_ERROR(WebAuthn, "MockHidConnection: VALIDATION FAILED - Command mismatch at index %zu. Expected %s Actual %s", m_currentExpectedCommandIndex, base64EncodeToString(expectedCommand).utf8().data(), base64EncodeToString(actualCommand).utf8().data());
+        RELEASE_LOG_ERROR(WebAuthn, "MockHidConnection: VALIDATION FAILED - Command mismatch at index %zu.", m_currentExpectedCommandIndex);
+        RELEASE_LOG_ERROR(WebAuthn, "MockHidConnection: Expected: %s", base64EncodeToString(expectedCommand).utf8().data());
+        RELEASE_LOG_ERROR(WebAuthn, "MockHidConnection: Actual:   %s", base64EncodeToString(actualCommand).utf8().data());
         RELEASE_ASSERT_NOT_REACHED_WITH_MESSAGE("MockHidConnection: Command did not match expected value.");
     }
 

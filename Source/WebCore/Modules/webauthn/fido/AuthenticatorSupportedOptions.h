@@ -62,6 +62,11 @@ public:
         kNotSupported,
     };
 
+    enum class MakeCredUvNotRqdAvailability : bool {
+        kSupported,
+        kNotSupported
+    };
+
     AuthenticatorSupportedOptions() = default;
     AuthenticatorSupportedOptions(AuthenticatorSupportedOptions&&) = default;
     AuthenticatorSupportedOptions& operator=(AuthenticatorSupportedOptions&&) = default;
@@ -71,12 +76,14 @@ public:
     AuthenticatorSupportedOptions& setUserVerificationAvailability(UserVerificationAvailability);
     AuthenticatorSupportedOptions& setUserPresenceRequired(bool);
     AuthenticatorSupportedOptions& setClientPinAvailability(ClientPinAvailability);
+    AuthenticatorSupportedOptions& setMakeCredUvNotRqdAvailability(MakeCredUvNotRqdAvailability);
 
     bool isPlatformDevice() const { return m_isPlatformDevice; }
     ResidentKeyAvailability residentKeyAvailability() const { return m_residentKeyAvailability; };
     UserVerificationAvailability userVerificationAvailability() const { return m_userVerificationAvailability; };
     bool userPresenceRequired() const { return m_userPresenceRequired; }
     ClientPinAvailability clientPinAvailability() const { return m_clientPinAvailability; }
+    MakeCredUvNotRqdAvailability makeCredUvNotRqdAvailability() const { return m_makeCredUvNotRqdAvailability; }
 
 private:
     // Indicates that the device is attached to the client and therefore can't be
@@ -92,6 +99,9 @@ private:
     // Represents whether client pin in set and stored in device. Set as null
     // optional if client pin capability is not supported by the authenticator.
     ClientPinAvailability m_clientPinAvailability { ClientPinAvailability::kNotSupported };
+    // Indicates whether the authenticator supports making non-discoverable credentials
+    // without requiring user verification (CTAP 2.1+ feature).
+    MakeCredUvNotRqdAvailability m_makeCredUvNotRqdAvailability { MakeCredUvNotRqdAvailability::kNotSupported };
 };
 
 WEBCORE_EXPORT cbor::CBORValue convertToCBOR(const AuthenticatorSupportedOptions&);

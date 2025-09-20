@@ -129,7 +129,7 @@ void CtapAuthenticator::makeCredential()
         m_currentBatch = 0;
         std::optional<PinParameters> pinParameters;
         if (!m_pinAuth.isEmpty())
-            pinParameters = PinParameters { pin::kProtocolVersion, m_pinAuth };
+            pinParameters = PinParameters { static_cast<uint8_t>(selectPinProtocol()), m_pinAuth };
         Vector<uint8_t> cborCmd = encodeSilentGetAssertion(options.rp.id, requestData().hash, m_batches[m_currentBatch], pinParameters);
         protectedDriver()->transact(WTFMove(cborCmd), [weakThis = WeakPtr { *this }](Vector<uint8_t>&& data) {
             ASSERT(RunLoop::isMain());
@@ -171,7 +171,7 @@ void CtapAuthenticator::continueSilentlyCheckCredentials(Vector<uint8_t>&& data,
     auto response = readCTAPGetAssertionResponse(data, AuthenticatorAttachment::CrossPlatform);
     std::optional<PinParameters> pinParameters;
     if (!m_pinAuth.isEmpty())
-        pinParameters = PinParameters { pin::kProtocolVersion, m_pinAuth };
+        pinParameters = PinParameters { static_cast<uint8_t>(selectPinProtocol()), m_pinAuth };
     WTF::switchOn(requestData().options, [&](const PublicKeyCredentialCreationOptions& options) {
         cborCmd = encodeSilentGetAssertion(options.rp.id, requestData().hash, m_batches[m_currentBatch], pinParameters);
     }, [&](const PublicKeyCredentialRequestOptions& options) {
@@ -210,13 +210,49 @@ void CtapAuthenticator::continueMakeCredentialAfterCheckExcludedCredentials(bool
         residentKeyAvailability = AuthenticatorSupportedOptions::ResidentKeyAvailability::kNotSupported;
     }
 
-    // If UV is required, then either built-in uv or a pin will work.
-    if (internalUVAvailability == UVAvailability::kSupportedAndConfigured && (!options.authenticatorSelection || options.authenticatorSelection->userVerification != UserVerificationRequirement::Discouraged) && m_pinAuth.isEmpty())
+    // According to CTAP 2.2 spec:
+    // - CTAP2.0 authenticators always require some form of user verification for makeCredential
+    // - CTAP2.1+ authenticators require UV unless makeCredUvNotRqd option is true
+    // - If authenticator requires UV but no pinUvAuthParam provided -> CTAP2_ERR_PUAT_REQUIRED
+
+    bool userVerificationRequired = options.authenticatorSelection && options.authenticatorSelection->userVerification == UserVerificationRequirement::Required;
+    bool userVerificationDiscouraged = options.authenticatorSelection && options.authenticatorSelection->userVerification == UserVerificationRequirement::Discouraged;
+
+    // Check if authenticator allows credentials without user verification
+    bool authenticatorAllowsUvNotRequired = m_info.options().makeCredUvNotRqdAvailability() == AuthenticatorSupportedOptions::MakeCredUvNotRqdAvailability::kSupported;
+
+    // Determine if we should use built-in UV, PIN, or neither
+    bool shouldUsePinAuth = false;
+    bool shouldUseBuiltInUv = false;
+
+    if (userVerificationRequired) {
+        // RP explicitly requires UV - use PIN if available, otherwise built-in UV
+        if (!m_pinAuth.isEmpty()) {
+            shouldUsePinAuth = true;
+        } else if (internalUVAvailability == UVAvailability::kSupportedAndConfigured) {
+            shouldUseBuiltInUv = true;
+        }
+    } else if (!userVerificationDiscouraged) {
+        // RP doesn't discourage UV - use what's available if authenticator requires it
+        if (!authenticatorAllowsUvNotRequired) {
+            // Authenticator requires UV for all credentials
+            if (!m_pinAuth.isEmpty()) {
+                shouldUsePinAuth = true;
+            } else if (internalUVAvailability == UVAvailability::kSupportedAndConfigured) {
+                shouldUseBuiltInUv = true;
+            }
+        }
+        // If authenticatorAllowsUvNotRequired=true, we can create without UV
+    }
+    // If userVerificationDiscouraged=true, don't use any UV
+
+    if (shouldUsePinAuth) {
+        cborCmd = encodeMakeCredentialRequestAsCBOR(requestData().hash, options, internalUVAvailability, residentKeyAvailability, authenticatorSupportedExtensions, PinParameters { static_cast<uint8_t>(selectPinProtocol()), m_pinAuth }, m_info.algorithms(), WTFMove(overrideExcludeCredentials));
+    } else if (shouldUseBuiltInUv) {
         cborCmd = encodeMakeCredentialRequestAsCBOR(requestData().hash, options, internalUVAvailability, residentKeyAvailability, authenticatorSupportedExtensions, std::nullopt, m_info.algorithms(), WTFMove(overrideExcludeCredentials));
-    else if (m_info.options().clientPinAvailability() == AuthenticatorSupportedOptions::ClientPinAvailability::kSupportedAndPinSet)
-        cborCmd = encodeMakeCredentialRequestAsCBOR(requestData().hash, options, internalUVAvailability, residentKeyAvailability, authenticatorSupportedExtensions, PinParameters { pin::kProtocolVersion, m_pinAuth }, m_info.algorithms(), WTFMove(overrideExcludeCredentials));
-    else
+    } else {
         cborCmd = encodeMakeCredentialRequestAsCBOR(requestData().hash, options, internalUVAvailability, residentKeyAvailability, authenticatorSupportedExtensions, std::nullopt, m_info.algorithms(), WTFMove(overrideExcludeCredentials));
+    }
     CTAP_RELEASE_LOG("makeCredential: Sending %s", base64EncodeToString(cborCmd).utf8().data());
     if (m_info.maxMsgSize() && cborCmd.size() >= *m_info.maxMsgSize())
         CTAP_RELEASE_LOG("CtapAuthenticator::makeCredential cmdSize = %lu maxMsgSize = %u", cborCmd.size(), *m_info.maxMsgSize());
@@ -296,7 +332,7 @@ void CtapAuthenticator::getAssertion()
         m_currentBatch = 0;
         std::optional<PinParameters> pinParameters;
         if (!m_pinAuth.isEmpty())
-            pinParameters = PinParameters { pin::kProtocolVersion, m_pinAuth };
+            pinParameters = PinParameters { static_cast<uint8_t>(selectPinProtocol()), m_pinAuth };
         Vector<uint8_t> cborCmd = encodeSilentGetAssertion(options.rpId, requestData().hash, m_batches[m_currentBatch], pinParameters);
         protectedDriver()->transact(WTFMove(cborCmd), [weakThis = WeakPtr { *this }](Vector<uint8_t>&& data) {
             ASSERT(RunLoop::isMain());
@@ -328,7 +364,7 @@ void CtapAuthenticator::continueGetAssertionAfterCheckAllowCredentials()
     if (internalUVAvailability == UVAvailability::kSupportedAndConfigured && options.userVerification != UserVerificationRequirement::Discouraged && m_pinAuth.isEmpty())
         cborCmd = encodeGetAssertionRequestAsCBOR(requestData().hash, options, internalUVAvailability, authenticatorSupportedExtensions, std::nullopt, WTFMove(overrideAllowCredentials));
     else if (m_info.options().clientPinAvailability() == AuthenticatorSupportedOptions::ClientPinAvailability::kSupportedAndPinSet && options.userVerification != UserVerificationRequirement::Discouraged)
-        cborCmd = encodeGetAssertionRequestAsCBOR(requestData().hash, options, internalUVAvailability, authenticatorSupportedExtensions, PinParameters { pin::kProtocolVersion, m_pinAuth }, WTFMove(overrideAllowCredentials));
+        cborCmd = encodeGetAssertionRequestAsCBOR(requestData().hash, options, internalUVAvailability, authenticatorSupportedExtensions, PinParameters { static_cast<uint8_t>(selectPinProtocol()), m_pinAuth }, WTFMove(overrideAllowCredentials));
     else
         cborCmd = encodeGetAssertionRequestAsCBOR(requestData().hash, options, internalUVAvailability, authenticatorSupportedExtensions, std::nullopt, WTFMove(overrideAllowCredentials));
     if (m_info.maxMsgSize() && cborCmd.size() >= *m_info.maxMsgSize())
@@ -513,7 +549,7 @@ void CtapAuthenticator::continueGetPinTokenAfterRequestPin(const String& pin, co
         tryRestartPin(CtapDeviceResponseCode::kCtap2ErrPinInvalid);
         return;
     }
-    auto tokenRequest = pin::TokenRequest::tryCreate(*pinUTF8, peerKey);
+    auto tokenRequest = pin::TokenRequest::tryCreate(selectPinProtocol(), *pinUTF8, peerKey);
     if (!tokenRequest) {
         receiveRespond(ExceptionData { ExceptionCode::UnknownError, "Cannot create a TokenRequest."_s });
         return;
@@ -618,6 +654,15 @@ bool CtapAuthenticator::isUVSetup() const
     return m_info.options().clientPinAvailability() == AuthenticatorSupportedOptions::ClientPinAvailability::kSupportedAndPinSet || m_info.options().userVerificationAvailability() == AuthenticatorSupportedOptions::UserVerificationAvailability::kSupportedAndConfigured;
 }
 
+fido::PINUVAuthProtocol CtapAuthenticator::selectPinProtocol() const
+{
+    if (auto& protocols = m_info.pinProtocol()) {
+        if (std::find(protocols->begin(), protocols->end(), 2) != protocols->end())
+            return fido::PINUVAuthProtocol::kPinProtocol2;
+    }
+    return fido::PINUVAuthProtocol::kPinProtocol1;
+}
+
 void CtapAuthenticator::continueSetupPinAfterCommand(Vector<uint8_t>&& data, const String& pin, Ref<WebCore::CryptoKeyEC> peerKey)
 {
     auto error = getResponseCode(data);
@@ -633,7 +678,7 @@ void CtapAuthenticator::continueSetupPinAfterCommand(Vector<uint8_t>&& data, con
         protectedObserver()->authenticatorStatusUpdated(WebAuthenticationStatus::PinInvalid);
         return;
     }
-    auto tokenRequest = pin::TokenRequest::tryCreate(*pinUTF8, peerKey);
+    auto tokenRequest = pin::TokenRequest::tryCreate(selectPinProtocol(), *pinUTF8, peerKey);
     if (!tokenRequest) {
         CTAP_RELEASE_LOG("continueSetupPinAfterCommand: Failed to create TokenRequest.");
         receiveRespond(ExceptionData { ExceptionCode::UnknownError, "Cannot create a TokenRequest."_s });
@@ -661,7 +706,7 @@ void CtapAuthenticator::continueSetupPinAfterGetKeyAgreement(Vector<uint8_t>&& d
         receiveRespond(ExceptionData { ExceptionCode::UnknownError, makeString("Unknown internal error. Error code: "_s, static_cast<uint8_t>(error)) });
         return;
     }
-    auto setPinRequest = pin::SetPinRequest::tryCreate(pin, keyAgreement->peerKey);
+    auto setPinRequest = pin::SetPinRequest::tryCreate(selectPinProtocol(), pin, keyAgreement->peerKey);
     if (!setPinRequest) {
         receiveRespond(ExceptionData { ExceptionCode::UnknownError, "Cannot create a SetPinRequest."_s });
         return;

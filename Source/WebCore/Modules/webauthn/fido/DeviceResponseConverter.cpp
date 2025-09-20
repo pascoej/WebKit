@@ -300,6 +300,18 @@ std::optional<AuthenticatorGetInfoResponse> readCTAPGetInfoResponse(const Vector
             else
                 options.setClientPinAvailability(AuthenticatorSupportedOptions::ClientPinAvailability::kSupportedButPinNotSet);
         }
+
+        optionMapIt = optionMap.find(CBOR(kMakeCredUvNotRqdMapKey));
+        if (optionMapIt != optionMap.end()) {
+            if (!optionMapIt->second.isBool())
+                return std::nullopt;
+
+            if (optionMapIt->second.getBool())
+                options.setMakeCredUvNotRqdAvailability(AuthenticatorSupportedOptions::MakeCredUvNotRqdAvailability::kSupported);
+            else
+                options.setMakeCredUvNotRqdAvailability(AuthenticatorSupportedOptions::MakeCredUvNotRqdAvailability::kNotSupported);
+        }
+
         response.setOptions(WTFMove(options));
     }
 

@@ -36,6 +36,11 @@
 
 namespace fido {
 
+enum class PINUVAuthProtocol : uint8_t {
+    kPinProtocol1 = 1,
+    kPinProtocol2 = 2,
+};
+
 enum class ProtocolVersion {
     kCtap2,
     kCtap21,
@@ -152,6 +157,7 @@ constexpr auto kResidentKeyMapKey = "rk"_s;
 constexpr auto kUserVerificationMapKey = "uv"_s;
 constexpr auto kUserPresenceMapKey = "up"_s;
 constexpr auto kClientPinMapKey = "clientPin"_s;
+constexpr auto kMakeCredUvNotRqdMapKey = "makeCredUvNotRqd"_s;
 constexpr auto kPlatformDeviceMapKey = "plat"_s;
 constexpr auto kEntityIdMapKey = "id"_s;
 constexpr auto kEntityNameMapKey = "name"_s;

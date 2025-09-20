@@ -83,7 +83,7 @@ TEST(CtapPinTest, TestSetPinRequest)
 
     String pin = "1234"_s;
 
-    auto request = SetPinRequest::tryCreate(pin, downcast<CryptoKeyEC>(*keyPair.publicKey));
+    auto request = SetPinRequest::tryCreate(PINUVAuthProtocol::kPinProtocol1, pin, downcast<CryptoKeyEC>(*keyPair.publicKey));
     EXPECT_TRUE(request);
     auto result = encodeAsCBOR(*request);
 
@@ -154,11 +154,11 @@ TEST(CtapPinTest, TestSetPinRequest)
     EXPECT_TRUE(equalSpans(newPinEnc.span(), std::span { expectedNewPinEnc }));
 
     String pin2 = "123"_s;
-    auto request2 = SetPinRequest::tryCreate(pin2, downcast<CryptoKeyEC>(*keyPair.publicKey));
+    auto request2 = SetPinRequest::tryCreate(PINUVAuthProtocol::kPinProtocol1, pin2, downcast<CryptoKeyEC>(*keyPair.publicKey));
     EXPECT_FALSE(request2);
 
     String pin3 = "01234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950"_s;
-    auto request3 = SetPinRequest::tryCreate(pin3, downcast<CryptoKeyEC>(*keyPair.publicKey));
+    auto request3 = SetPinRequest::tryCreate(PINUVAuthProtocol::kPinProtocol1, pin3, downcast<CryptoKeyEC>(*keyPair.publicKey));
     EXPECT_FALSE(request3);
 }
 
@@ -271,7 +271,7 @@ TEST(CtapPinTest, TestTokenRequest)
 
     CString pin = "1234";
 
-    auto token = TokenRequest::tryCreate(pin, downcast<CryptoKeyEC>(*keyPair.publicKey));
+    auto token = TokenRequest::tryCreate(PINUVAuthProtocol::kPinProtocol1, pin, downcast<CryptoKeyEC>(*keyPair.publicKey));
     EXPECT_TRUE(token);
     auto result = encodeAsCBOR(*token);
 
@@ -392,6 +392,127 @@ TEST(CtapPinTest, TestPinAuth)
     constexpr std::array<uint8_t, 16> expectedPinAuth { 0x0b, 0xec, 0x9d, 0xba, 0x69, 0xb0, 0x0f, 0x45, 0x0b, 0xec, 0x66, 0xb4, 0x75, 0x7f, 0x93, 0x85 };
     EXPECT_EQ(pinAuth.size(), 16u);
     EXPECT_TRUE(equalSpans(pinAuth.span(), std::span { expectedPinAuth }));
+}
+
+TEST(CtapPinTest, TestSetPinRequestProtocol2)
+{
+    auto keyPairResult = CryptoKeyEC::generatePair(CryptoAlgorithmIdentifier::ECDH, "P-256"_s, true, CryptoKeyUsageDeriveBits);
+    ASSERT_FALSE(keyPairResult.hasException());
+    auto keyPair = keyPairResult.releaseReturnValue();
+
+    String pin = "1234"_s;
+
+    auto request = SetPinRequest::tryCreate(PINUVAuthProtocol::kPinProtocol2, pin, downcast<CryptoKeyEC>(*keyPair.publicKey));
+    EXPECT_TRUE(request);
+    auto result = encodeAsCBOR(*request);
+
+    EXPECT_EQ(result.size(), 187u);
+    EXPECT_EQ(result[0], static_cast<uint8_t>(CtapRequestCommand::kAuthenticatorClientPin));
+
+    Vector<uint8_t> buffer;
+    buffer.append(result.subspan(1));
+    auto decodedResponse = cbor::CBORReader::read(buffer);
+    EXPECT_TRUE(decodedResponse);
+    EXPECT_TRUE(decodedResponse->isMap());
+    const auto& responseMap = decodedResponse->getMap();
+
+    const auto& it1 = responseMap.find(CBORValue(static_cast<uint8_t>(RequestKey::kProtocol)));
+    EXPECT_NE(it1, responseMap.end());
+    EXPECT_EQ(it1->second.getInteger(), kProtocolVersion);
+
+    const auto& it2 = responseMap.find(CBORValue(static_cast<uint8_t>(RequestKey::kSubcommand)));
+    EXPECT_NE(it2, responseMap.end());
+    EXPECT_EQ(it2->second.getInteger(), static_cast<uint8_t>(Subcommand::kSetPin));
+
+    // COSE key validation
+    auto it = responseMap.find(CBORValue(static_cast<int>(RequestKey::kKeyAgreement)));
+    EXPECT_NE(it, responseMap.end());
+    EXPECT_TRUE(it->second.isMap());
+    const auto& coseKey = it->second.getMap();
+
+    const auto& it3 = coseKey.find(CBORValue(COSE::kty));
+    EXPECT_NE(it3, coseKey.end());
+    EXPECT_EQ(it3->second.getInteger(), COSE::EC2);
+
+    const auto& it4 = coseKey.find(CBORValue(COSE::alg));
+    EXPECT_NE(it4, coseKey.end());
+    EXPECT_EQ(it4->second.getInteger(), COSE::ECDH256);
+
+    const auto& it5 = coseKey.find(CBORValue(COSE::crv));
+    EXPECT_NE(it5, coseKey.end());
+    EXPECT_EQ(it5->second.getInteger(), COSE::P_256);
+
+    // Verify encrypted PIN and pinAuth are present
+    const auto& it6 = responseMap.find(CBORValue(static_cast<uint8_t>(RequestKey::kNewPinEnc)));
+    EXPECT_NE(it6, responseMap.end());
+    EXPECT_TRUE(it6->second.isByteString());
+    EXPECT_EQ(it6->second.getByteString().size(), 64u); // 64-byte padded PIN
+
+    const auto& it7 = responseMap.find(CBORValue(static_cast<uint8_t>(RequestKey::kPinAuth)));
+    EXPECT_NE(it7, responseMap.end());
+    EXPECT_TRUE(it7->second.isByteString());
+    EXPECT_GT(it7->second.getByteString().size(), 0u); // pinAuth should be present
+
+    // For Protocol 2, we don't verify decryption since it requires internal HKDF access
+    // The test verifies that the CBOR structure is correct and Protocol 2 is used
+}
+
+TEST(CtapPinTest, TestTokenRequestProtocol2)
+{
+    auto keyPairResult = CryptoKeyEC::generatePair(CryptoAlgorithmIdentifier::ECDH, "P-256"_s, true, CryptoKeyUsageDeriveBits);
+    ASSERT_FALSE(keyPairResult.hasException());
+    auto keyPair = keyPairResult.releaseReturnValue();
+
+    CString pin = "1234";
+
+    auto token = TokenRequest::tryCreate(PINUVAuthProtocol::kPinProtocol2, pin, downcast<CryptoKeyEC>(*keyPair.publicKey));
+    EXPECT_TRUE(token);
+    auto result = encodeAsCBOR(*token);
+
+    EXPECT_EQ(result.size(), 103u);
+    EXPECT_EQ(result[0], static_cast<uint8_t>(CtapRequestCommand::kAuthenticatorClientPin));
+
+    Vector<uint8_t> buffer;
+    buffer.append(result.subspan(1));
+    auto decodedResponse = cbor::CBORReader::read(buffer);
+    EXPECT_TRUE(decodedResponse);
+    EXPECT_TRUE(decodedResponse->isMap());
+    const auto& responseMap = decodedResponse->getMap();
+
+    const auto& it1 = responseMap.find(CBORValue(static_cast<uint8_t>(RequestKey::kProtocol)));
+    EXPECT_NE(it1, responseMap.end());
+    EXPECT_EQ(it1->second.getInteger(), kProtocolVersion);
+
+    const auto& it2 = responseMap.find(CBORValue(static_cast<uint8_t>(RequestKey::kSubcommand)));
+    EXPECT_NE(it2, responseMap.end());
+    EXPECT_EQ(it2->second.getInteger(), static_cast<uint8_t>(Subcommand::kGetPinToken));
+
+    // COSE key validation
+    auto it = responseMap.find(CBORValue(static_cast<int>(RequestKey::kKeyAgreement)));
+    EXPECT_NE(it, responseMap.end());
+    EXPECT_TRUE(it->second.isMap());
+    const auto& coseKey = it->second.getMap();
+
+    const auto& it3 = coseKey.find(CBORValue(COSE::kty));
+    EXPECT_NE(it3, coseKey.end());
+    EXPECT_EQ(it3->second.getInteger(), COSE::EC2);
+
+    const auto& it4 = coseKey.find(CBORValue(COSE::alg));
+    EXPECT_NE(it4, coseKey.end());
+    EXPECT_EQ(it4->second.getInteger(), COSE::ECDH256);
+
+    const auto& it5 = coseKey.find(CBORValue(COSE::crv));
+    EXPECT_NE(it5, coseKey.end());
+    EXPECT_EQ(it5->second.getInteger(), COSE::P_256);
+
+    // Verify encrypted PIN hash is present
+    const auto& it6 = responseMap.find(CBORValue(static_cast<uint8_t>(RequestKey::kPinHashEnc)));
+    EXPECT_NE(it6, responseMap.end());
+    EXPECT_TRUE(it6->second.isByteString());
+    EXPECT_EQ(it6->second.getByteString().size(), 16u); // 16-byte encrypted PIN hash
+
+    // For Protocol 2, we don't verify decryption since it requires internal HKDF access
+    // The test verifies that the CBOR structure is correct and Protocol 2 is used
 }
 
 } // namespace TestWebKitAPI

@@ -60,6 +60,12 @@ AuthenticatorSupportedOptions& AuthenticatorSupportedOptions::setClientPinAvaila
     return *this;
 }
 
+AuthenticatorSupportedOptions& AuthenticatorSupportedOptions::setMakeCredUvNotRqdAvailability(MakeCredUvNotRqdAvailability makeCredUvNotRqdAvailability)
+{
+    m_makeCredUvNotRqdAvailability = makeCredUvNotRqdAvailability;
+    return *this;
+}
+
 AuthenticatorSupportedOptions& AuthenticatorSupportedOptions::setIsPlatformDevice(bool isPlatformDevice)
 {
     m_isPlatformDevice = isPlatformDevice;
@@ -98,6 +104,16 @@ cbor::CBORValue convertToCBOR(const AuthenticatorSupportedOptions& options)
         optionMap.emplace(CBORValue(kClientPinMapKey), CBORValue(false));
         break;
     case ClientPinAvailability::kNotSupported:
+        break;
+    }
+
+    using MakeCredUvNotRqdAvailability = AuthenticatorSupportedOptions::MakeCredUvNotRqdAvailability;
+
+    switch (options.makeCredUvNotRqdAvailability()) {
+    case MakeCredUvNotRqdAvailability::kSupported:
+        optionMap.emplace(CBORValue(kMakeCredUvNotRqdMapKey), CBORValue(true));
+        break;
+    case MakeCredUvNotRqdAvailability::kNotSupported:
         break;
     }
 

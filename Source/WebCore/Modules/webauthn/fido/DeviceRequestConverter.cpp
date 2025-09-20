@@ -183,7 +183,7 @@ Vector<uint8_t> encodeMakeCredentialRequestAsCBOR(const Vector<uint8_t>& hash, c
 
     if (pin) {
         ASSERT(pin->protocol >= 0);
-        cborMap[CBORValue(8)] = CBORValue(WTFMove(pin->auth));
+        cborMap[CBORValue(8)] = CBORValue(pin->auth);
         cborMap[CBORValue(9)] = CBORValue(pin->protocol);
     }
 
@@ -208,7 +208,7 @@ Vector<uint8_t> encodeSilentGetAssertion(const String& rpId, const Vector<uint8_
 
     if (pin) {
         ASSERT(pin->protocol >= 0);
-        cborMap[CBORValue(kCtapGetAssertionPinUvAuthParamKey)] = CBORValue(WTFMove(pin->auth));
+        cborMap[CBORValue(kCtapGetAssertionPinUvAuthParamKey)] = CBORValue(pin->auth);
         cborMap[CBORValue(kCtapGetAssertionPinUvAuthProtocolKey)] = CBORValue(pin->protocol);
     }
 
@@ -279,7 +279,7 @@ Vector<uint8_t> encodeGetAssertionRequestAsCBOR(const Vector<uint8_t>& hash, con
 
     if (pin) {
         ASSERT(pin->protocol >= 0);
-        cborMap[CBORValue(6)] = CBORValue(WTFMove(pin->auth));
+        cborMap[CBORValue(6)] = CBORValue(pin->auth);
         cborMap[CBORValue(7)] = CBORValue(pin->protocol);
     }
 

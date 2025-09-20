@@ -136,7 +136,7 @@ private:
 struct SetPinRequest {
 public:
     const WebCore::CryptoKeyAES& sharedKey() const { return m_sharedKey.get(); }
-    WEBCORE_EXPORT static std::optional<SetPinRequest> tryCreate(const String& newPin, const WebCore::CryptoKeyEC&);
+    WEBCORE_EXPORT static std::optional<SetPinRequest> tryCreate(PINUVAuthProtocol protocol, const String& newPin, const WebCore::CryptoKeyEC&);
     WEBCORE_EXPORT const Vector<uint8_t>& pinAuth() const;
 
     friend Vector<uint8_t> encodeAsCBOR(const SetPinRequest&);
@@ -156,7 +156,7 @@ private:
 class TokenRequest {
     WTF_MAKE_NONCOPYABLE(TokenRequest);
 public:
-    WEBCORE_EXPORT static std::optional<TokenRequest> tryCreate(const CString& pin, const WebCore::CryptoKeyEC&);
+    WEBCORE_EXPORT static std::optional<TokenRequest> tryCreate(PINUVAuthProtocol protocol, const CString& pin, const WebCore::CryptoKeyEC&);
     TokenRequest(TokenRequest&&) = default;
 
     // sharedKey returns the shared ECDH key that was used to encrypt the PIN.
