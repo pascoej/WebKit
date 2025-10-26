@@ -1,0 +1,7 @@
+PASS: window.PublicKeyCredential cannot be overridden
+PASS: navigator.credentials.get cannot be overridden
+PASS: navigator.credentials.create cannot be overridden
+PASS: navigator.credentials returns real object even when navigator is shadowed
+PASS: PublicKeyCredential.isConditionalMediationAvailable cannot be overridden
+PASS: PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable cannot be overridden
+PASS: PublicKeyCredential.getClientCapabilities cannot be overridden
