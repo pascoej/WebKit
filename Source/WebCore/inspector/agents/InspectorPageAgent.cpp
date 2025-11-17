@@ -62,6 +62,7 @@
 #include "Page.h"
 #include "RenderObjectInlines.h"
 #include "RenderTheme.h"
+#include "ScriptableDocumentParser.h"
 #include "ScriptController.h"
 #include "ScriptSourceCode.h"
 #include "SecurityOrigin.h"
@@ -74,6 +75,7 @@
 #include <JavaScriptCore/ContentSearchUtilities.h>
 #include <JavaScriptCore/IdentifiersFactory.h>
 #include <JavaScriptCore/RegularExpression.h>
+#include <JavaScriptCore/ScriptCallStack.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/Stopwatch.h>
 #include <wtf/TZoneMallocInlines.h>
@@ -744,6 +746,46 @@ LocalFrame* InspectorPageAgent::assertFrame(Inspector::Protocol::ErrorString& er
 void InspectorPageAgent::loaderDetachedFromFrame(DocumentLoader& loader)
 {
     m_loaderToIdentifier.remove(&loader);
+}
+
+void InspectorPageAgent::frameDidStartWebAuthenticationOperation(LocalFrame& frame, const String& ceremonyId, Ref<JSON::Object>&& request, Ref<Inspector::ScriptCallStack>&& initiatorStackTrace)
+{
+    Document* document = frame.document();
+
+    // Build initiator object with stack trace information
+    RefPtr<Inspector::Protocol::Network::Initiator> initiatorObject;
+
+    if (initiatorStackTrace->size() > 0) {
+        initiatorObject = Inspector::Protocol::Network::Initiator::create()
+            .setType(Inspector::Protocol::Network::Initiator::Type::Script)
+            .release();
+        initiatorObject->setStackTrace(initiatorStackTrace->buildInspectorObject());
+    } else if (document && document->scriptableDocumentParser()) {
+        initiatorObject = Inspector::Protocol::Network::Initiator::create()
+            .setType(Inspector::Protocol::Network::Initiator::Type::Parser)
+            .release();
+        initiatorObject->setUrl(document->url().string());
+        initiatorObject->setLineNumber(document->scriptableDocumentParser()->textPosition().m_line.oneBasedInt());
+    } else {
+        initiatorObject = Inspector::Protocol::Network::Initiator::create()
+            .setType(Inspector::Protocol::Network::Initiator::Type::Other)
+            .release();
+    }
+
+    // Store ceremony data for later
+    m_webAuthenticationCeremonies.add(ceremonyId, WebAuthenticationCeremonyData { request.copyRef(), initiatorObject });
+
+    // Send start event
+    m_frontendDispatcher->frameDidStartWebAuthenticationOperation(ceremonyId, frameId(&frame), WTFMove(request), WTFMove(initiatorObject));
+}
+
+void InspectorPageAgent::frameDidFinishWebAuthenticationOperation(LocalFrame& frame, const String& ceremonyId, Ref<JSON::Object>&& response)
+{
+    // Send finish event
+    m_frontendDispatcher->frameDidFinishWebAuthenticationOperation(ceremonyId, frameId(&frame), WTFMove(response));
+
+    // Clean up stored ceremony data
+    m_webAuthenticationCeremonies.remove(ceremonyId);
 }
 
 void InspectorPageAgent::accessibilitySettingsDidChange()

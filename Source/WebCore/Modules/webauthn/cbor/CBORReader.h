@@ -103,6 +103,9 @@ public:
     // decoding failures.
     WEBCORE_EXPORT static std::optional<CBORValue> read(const Bytes&, DecoderError* errorCodeOut = nullptr, int maxNestingLevel = kCBORMaxDepth);
 
+    // Like read(), but also returns the number of bytes consumed from the input.
+    WEBCORE_EXPORT static std::optional<std::pair<CBORValue, size_t>> readWithBytesConsumed(const Bytes&, DecoderError* errorCodeOut = nullptr, int maxNestingLevel = kCBORMaxDepth);
+
     // Translates errors to human-readable error messages.
     static ASCIILiteral errorCodeToString(DecoderError errorCode);
 

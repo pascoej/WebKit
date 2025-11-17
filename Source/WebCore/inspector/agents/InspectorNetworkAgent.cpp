@@ -417,7 +417,7 @@ void InspectorNetworkAgent::willSendRequest(ResourceLoaderIdentifier identifier,
     auto protocolResourceType = ResourceUtilities::resourceTypeToProtocol(type);
 
     Document* document = loader && loader->frame() ? loader->frame()->document() : nullptr;
-    auto initiatorObject = buildInitiatorObject(document, &request);
+    auto initiatorObject = buildInitiatorObject(document, &request, &m_instrumentingAgents.get());
 
     String url = loader ? loader->url().string() : request.url().string();
     std::optional<Inspector::Protocol::Page::ResourceType> typePayload;
@@ -638,7 +638,7 @@ void InspectorNetworkAgent::didLoadResourceFromMemoryCache(DocumentLoader* loade
 
     m_resourcesData->resourceCreated(requestId, loaderId, resource);
 
-    auto initiatorObject = buildInitiatorObject(loader->frame() ? loader->frame()->document() : nullptr, &resource.resourceRequest());
+    auto initiatorObject = buildInitiatorObject(loader->frame() ? loader->frame()->document() : nullptr, &resource.resourceRequest(), &m_instrumentingAgents.get());
 
     // FIXME: It would be ideal to generate the Network.Response with the MemoryCache source
     // instead of whatever ResourceResponse::Source the CachedResources's response has.
@@ -705,10 +705,10 @@ void InspectorNetworkAgent::didRecalculateStyle()
 void InspectorNetworkAgent::didScheduleStyleRecalculation(Document& document)
 {
     if (!m_styleRecalculationInitiator)
-        m_styleRecalculationInitiator = buildInitiatorObject(&document);
+        m_styleRecalculationInitiator = buildInitiatorObject(&document, nullptr, &m_instrumentingAgents.get());
 }
 
-Ref<Inspector::Protocol::Network::Initiator> InspectorNetworkAgent::buildInitiatorObject(Document* document, const ResourceRequest* resourceRequest)
+Ref<Inspector::Protocol::Network::Initiator> InspectorNetworkAgent::buildInitiatorObject(Document* document, const ResourceRequest* resourceRequest, InstrumentingAgents* instrumentingAgents)
 {
     // FIXME: Worker support.
     if (!isMainThread()) {
@@ -733,7 +733,7 @@ Ref<Inspector::Protocol::Network::Initiator> InspectorNetworkAgent::buildInitiat
         initiatorObject->setLineNumber(document->scriptableDocumentParser()->textPosition().m_line.oneBasedInt());
     }
 
-    auto domAgent = Ref { m_instrumentingAgents.get() }->persistentDOMAgent();
+    InspectorDOMAgent* domAgent = instrumentingAgents ? instrumentingAgents->persistentDOMAgent() : nullptr;
     if (domAgent && resourceRequest) {
         if (auto inspectorInitiatorNodeIdentifier = resourceRequest->inspectorInitiatorNodeIdentifier()) {
             if (!initiatorObject) {
@@ -741,16 +741,11 @@ Ref<Inspector::Protocol::Network::Initiator> InspectorNetworkAgent::buildInitiat
                     .setType(Inspector::Protocol::Network::Initiator::Type::Other)
                     .release();
             }
-
-            initiatorObject->setNodeId(*inspectorInitiatorNodeIdentifier);
         }
     }
 
     if (initiatorObject)
         return initiatorObject.releaseNonNull();
-
-    if (m_isRecalculatingStyle && m_styleRecalculationInitiator)
-        return *m_styleRecalculationInitiator;
 
     return Inspector::Protocol::Network::Initiator::create()
         .setType(Inspector::Protocol::Network::Initiator::Type::Other)

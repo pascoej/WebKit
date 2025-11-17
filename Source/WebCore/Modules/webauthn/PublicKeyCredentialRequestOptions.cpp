@@ -25,10 +25,14 @@
 
 #include "config.h"
 #include "PublicKeyCredentialRequestOptions.h"
+#include "BufferSource.h"
+#include "JSPublicKeyCredentialType.h"
+#include "JSPublicKeyCredentialRequestOptionsJSON.h"
+#include "JSUserVerificationRequirement.h"
+#include "PublicKeyCredentialDescriptorJSON.h"
+#include <wtf/text/Base64.h>
 
 #if ENABLE(WEB_AUTHN)
-
-#include "JSUserVerificationRequirement.h"
 
 namespace WebCore {
 
@@ -38,6 +42,21 @@ UserVerificationRequirement PublicKeyCredentialRequestOptions::userVerification(
         return *parsed;
     // Default value if string is invalid/unknown
     return UserVerificationRequirement::Preferred;
+}
+
+PublicKeyCredentialRequestOptionsJSON PublicKeyCredentialRequestOptions::toJSON() const
+{
+    PublicKeyCredentialRequestOptionsJSON value;
+    value.challenge = base64EncodeToString(this->challenge.span());
+    value.timeout = this->timeout;
+    value.rpId = this->rpId;
+    value.allowCredentials = this->allowCredentials.map([](auto& cred) {
+        return cred.toJSON();
+    });
+    value.userVerification = convertEnumerationToString(this->userVerification());
+    if (this->extensions)
+        value.extensions = this->extensions->toJSON();
+    return value;
 }
 
 } // namespace WebCore

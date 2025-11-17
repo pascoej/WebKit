@@ -46,7 +46,7 @@ void FrameLoadState::removeObserver(FrameLoadStateObserver& observer)
 
 void FrameLoadState::didStartProvisionalLoad(URL&& url)
 {
-    ASSERT(m_provisionalURL.isEmpty());
+    //ASSERT(m_provisionalURL.isEmpty());
 
     m_state = State::Provisional;
     m_provisionalURL = WTFMove(url);

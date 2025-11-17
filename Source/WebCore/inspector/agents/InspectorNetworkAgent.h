@@ -79,6 +79,8 @@ public:
 
     static constexpr ASCIILiteral errorDomain() { return "InspectorNetworkAgent"_s; }
 
+    static Ref<Inspector::Protocol::Network::Initiator> buildInitiatorObject(Document*, const ResourceRequest* = nullptr, InstrumentingAgents* = nullptr);
+
     // InspectorAgentBase
     void didCreateFrontendAndBackend() final;
     void willDestroyFrontendAndBackend(Inspector::DisconnectReason) final;
@@ -138,6 +140,7 @@ public:
     void searchOtherRequests(const JSC::Yarr::RegularExpression&, Ref<JSON::ArrayOf<Inspector::Protocol::Page::SearchResult>>&);
     void searchInRequest(Inspector::Protocol::ErrorString&, const Inspector::Protocol::Network::RequestId&, const String& query, bool caseSensitive, bool isRegex, RefPtr<JSON::ArrayOf<Inspector::Protocol::GenericTypes::SearchMatch>>&);
 
+
 protected:
     InspectorNetworkAgent(WebAgentContext&, const NetworkResourcesData::Settings&);
 
@@ -161,7 +164,6 @@ private:
 
     WebSocket* webSocketForRequestId(const Inspector::Protocol::Network::RequestId&);
 
-    Ref<Inspector::Protocol::Network::Initiator> buildInitiatorObject(Document*, const ResourceRequest* = nullptr);
     Ref<Inspector::Protocol::Network::ResourceTiming> buildObjectForTiming(const NetworkLoadMetrics&, ResourceLoader&);
     Ref<Inspector::Protocol::Network::Metrics> buildObjectForMetrics(const NetworkLoadMetrics&);
     RefPtr<Inspector::Protocol::Network::Response> buildObjectForResourceResponse(const ResourceResponse&, ResourceLoader*);

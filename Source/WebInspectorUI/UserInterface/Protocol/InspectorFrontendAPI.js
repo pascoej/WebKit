@@ -132,6 +132,13 @@ InspectorFrontendAPI = {
             initiatorHint: WI.TabBrowser.TabNavigationInitiator.FrontendAPI
         });
     },
+    
+    showAuthentication: function()
+    {
+        WI.showAuthenticationTab({
+            initiatorHint: WI.TabBrowser.TabNavigationInitiator.FrontendAPI
+        });
+    },
 
     showMainResourceForFrame: function(frameIdentifier)
     {

@@ -39,6 +39,8 @@
 #include "DocumentPage.h"
 #include "JSAuthenticatorAttachment.h"
 #include "JSDOMPromiseDeferred.h"
+#include "JSAttestationConveyancePreference.h"
+#include "JSPublicKeyCredentialType.h"
 #include "JSPublicKeyCredentialCreationOptions.h"
 #include "JSPublicKeyCredentialCreationOptionsJSON.h"
 #include "JSPublicKeyCredentialRequestOptions.h"
