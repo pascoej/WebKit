@@ -52,7 +52,8 @@ inline static float endPaddingQuirkValue(const RenderBlockFlow& flow)
 
 static std::tuple<float, float> glyphOverflowInInlineDirection(size_t firstTextBoxIndex, size_t lastTextBoxIndex, const InlineDisplay::Boxes& boxes, const FloatRect& inkOverflowRect, bool isLeftToRightDirection)
 {
-    // FIXME: This should be on the text box level and taking all characters into account (maybe consider utilizing the measuring pass if turns out to be a perf hit)
+    // Note: per-text-box horizontal glyph overflow is now computed in InlineDisplayContentBuilder::appendTextDisplayBox.
+    // This line-level function handles the remaining case of first/last text boxes on the line for non-simple font code paths.
     if (firstTextBoxIndex >= boxes.size() || lastTextBoxIndex >= boxes.size()) {
         ASSERT_NOT_REACHED();
         return { };

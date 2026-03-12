@@ -244,6 +244,34 @@ void InlineDisplayContentBuilder::appendTextDisplayBox(const Line::Run& lineRun,
         };
         addGlyphOverflow();
 
+        auto addHorizontalGlyphOverflow = [&] {
+            // Include horizontal glyph overflow (negative left bearing of first glyph,
+            // right overshoot of last glyph) in the text box's ink overflow.
+            // This is needed so that inline box parents (e.g. <code>) correctly propagate
+            // ink overflow, preventing clipping by ancestors with overflow: hidden.
+            if (&inlineTextBox->parent() == &root())
+                return;
+            if (text.length == 0)
+                return;
+            auto& fontCascade = style.fontCascade();
+            auto firstChar = content[text.start];
+            auto glyphData = fontCascade.glyphDataForCharacter(firstChar, false);
+            auto& font = glyphData.font ? *glyphData.font : fontCascade.primaryFont();
+            auto bounds = font.boundsForGlyph(glyphData.glyph);
+            if (bounds.x() < 0)
+                inkOverflow.inflate({ }, std::max(0.f, -bounds.x()), { }, { });
+            if (text.length > 1) {
+                auto lastChar = content[text.start + text.length - 1];
+                auto lastGlyphData = fontCascade.glyphDataForCharacter(lastChar, false);
+                auto& lastFont = lastGlyphData.font ? *lastGlyphData.font : fontCascade.primaryFont();
+                auto lastBounds = lastFont.boundsForGlyph(lastGlyphData.glyph);
+                auto lastAdvance = lastFont.widthForGlyph(lastGlyphData.glyph);
+                if (lastBounds.maxX() > lastAdvance)
+                    inkOverflow.inflate({ }, { }, { }, std::max(0.f, lastBounds.maxX() - lastAdvance));
+            }
+        };
+        addHorizontalGlyphOverflow();
+
         return inkOverflow;
     }();
 

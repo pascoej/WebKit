@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<!-- Test that monospace text inside inline code elements is not clipped
+     when a parent has overflow: hidden. Passes if the "d" character
+     renders identically to the reference (no clipping on left edge). -->
+<style>
+.container {
+    font-size: 32px;
+    line-height: 1.5;
+    padding: 20px;
+    overflow: hidden;
+}
+code {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 85%;
+    padding: 0.2em 0.4em;
+    background: #eee;
+    border-radius: 6px;
+}
+</style>
+<div class="container">Is the <code>path()</code> function allowed for the <code>d</code> property?</div>
